@@ -98,6 +98,7 @@ class RecipeMarkup(HTMLParser):
         self.blocks = []
         self.script = None
         self.source = None
+        self.images = []
 
     def handle_starttag(self, tag, attributes):
         attrs = dict(attributes)
@@ -105,6 +106,9 @@ class RecipeMarkup(HTMLParser):
             self.script = []
         if tag == "meta" and attrs.get("property") in {"pinterestapp:source", "og:see_also"}:
             self.source = self.source or attrs.get("content")
+        image_properties = {"og:image", "og:image:url", "og:image:secure_url"}
+        if tag == "meta" and attrs.get("property") in image_properties and attrs.get("content"):
+            self.images.append(attrs["content"])
 
     def handle_data(self, data):
         if self.script is not None:
@@ -146,6 +150,27 @@ def text(value, limit):
     return " ".join("".join(parser.parts).split())[:limit]
 
 
+def recipe_image(page_url, structured, fallbacks):
+    candidates = structured if isinstance(structured, list) else [structured]
+    for candidate in [*candidates, *fallbacks]:
+        if isinstance(candidate, dict):
+            candidate = candidate.get("contentUrl") or candidate.get("url")
+        if not isinstance(candidate, str) or not candidate.strip():
+            continue
+        try:
+            image = public_url(urljoin(page_url, candidate.strip()))
+            host = urlsplit(image).hostname
+            if host.endswith((".localhost", ".local", ".internal")):
+                continue
+            try:
+                ipaddress.ip_address(host)
+            except ValueError:
+                return image
+        except (ValueError, UnicodeError):
+            continue
+    return ""
+
+
 def recipe_draft(url):
     for _ in range(2):
         url, html = fetch_page(url)
@@ -179,6 +204,7 @@ def recipe_draft(url):
                         "name": name, "ingredients": ingredients, "url": url, "nutrition": nutrition,
                         "servings": text(str(recipe.get("recipeYield") or ""), 80),
                         "time": text(recipe.get("totalTime"), 40),
+                        "image": recipe_image(url, recipe.get("image"), page.images),
                     }
         break
     raise ImportErrorForUser("No structured ingredient list was found. Try the original recipe page or add it by hand.")
