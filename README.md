@@ -18,6 +18,6 @@ Upload the *contents* of this folder to a static web host that serves HTTPS (for
 ## Important current limitations
 - The app still stores changes in this browser's local storage; there is no account or cross-device sync.
 - Grocery prices and retailer ordering are not connected.
-- Nutrient bars in this prototype are illustrative demo indicators, not calculated nutrient adequacy.
+- Nutrient estimates use [USDA FoodData Central SR Legacy](https://fdc.nal.usda.gov/download-datasets/) food matches and approximate portions. The weekly score averages eight percentages of seven days of [FDA Daily Values](https://www.fda.gov/food/nutrition-facts-label/daily-value-nutrition-and-supplement-facts-labels), each capped at 100%. The shared reference is for comparing plans. Unmatched ingredients and unplanned meals are excluded.
 - Meal photos load from Unsplash and require internet unless previously cached by the browser.
 - Offline support caches the app shell; first launch and first cache setup require internet.

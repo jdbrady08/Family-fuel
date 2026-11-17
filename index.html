@@ -18,21 +18,235 @@
 const meals=[
 {day:'MON',date:'Nov 16',name:'Miso-glazed salmon bowls',cuisine:'JAPANESE-INSPIRED',time:'35 min',img:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=900',desc:'Salmon, brown rice, edamame, cucumber, avocado and quick-pickled carrot.',tags:['Omega-3','Fiber','Vitamin D'],cost:'$4.10 / serving',ingredients:['2.5 lb salmon','4 cups dry brown rice','2 cups shelled edamame','2 cucumbers','3 carrots','2 avocados','white miso, honey, rice vinegar, tamari'],steps:['Cook rice according to package directions.','Whisk ⅓ cup miso, 3 tbsp honey and 2 tbsp tamari. Brush over salmon.','Roast salmon at 425°F for 12–15 minutes, until it flakes and reaches 145°F.','Quick-pickle shaved carrot in rice vinegar, a pinch of salt and sugar for 15 minutes.','Serve salmon over rice with edamame, cucumber, avocado and pickled carrot.']},
 {day:'TUE',date:'Nov 17',name:'Slow-braised beef & white beans',cuisine:'MEDITERRANEAN',time:'3 hr 20 min',img:'https://images.unsplash.com/photo-1547592180-85f173990554?w=900',desc:'Tomato-rich chuck roast with cannellini beans, kale, rosemary and lemon gremolata.',tags:['Iron','Zinc','Fiber'],cost:'$3.25 / serving',ingredients:['3 lb beef chuck','2 cans cannellini beans','1 large onion','2 carrots','1 bunch kale','28 oz crushed tomatoes','rosemary, garlic, lemon'],steps:['Season beef and brown in a Dutch oven.','Add onion, carrot and garlic; cook 5 minutes.','Add tomatoes, rosemary and 1 cup broth. Cover and braise at 325°F for about 2½ hours.','Stir in drained beans and chopped kale; cook 15 minutes.','Shred beef, finish with lemon zest and parsley.']},
-{day:'WED',date:'Nov 18',name:'Crispy sardine & chickpea tacos',cuisine:'MEXICAN-INSPIRED',time:'30 min',img:'https://images.unsplash.com/photo-1551505093-3c6f6c7f3a1c?w=900',desc:'Limey chickpeas, sardines, cabbage slaw, avocado crema and warm corn tortillas.',tags:['Calcium*','Omega-3','Folate'],cost:'$2.20 / serving',ingredients:['8 cans boneless sardines with bones','3 cans chickpeas','28 corn tortillas','½ red cabbage','2 limes','1 cup plain yogurt','avocado, cilantro, cumin'],steps:['Warm chickpeas with cumin, garlic and a splash of water; lightly mash.','Shred cabbage and toss with lime juice and salt.','Warm sardines gently in a skillet; keep larger pieces intact.','Blend yogurt, avocado, lime and cilantro into a crema.','Build tacos with chickpeas, sardines, slaw and crema.']},
+{day:'WED',date:'Nov 18',name:'Crispy sardine & chickpea tacos',cuisine:'MEXICAN-INSPIRED',time:'30 min',img:'https://images.unsplash.com/photo-1551505093-3c6f6c7f3a1c?w=900',desc:'Limey chickpeas, sardines, cabbage slaw, avocado crema and warm corn tortillas.',tags:['Calcium*','Omega-3','Folate'],cost:'$2.20 / serving',ingredients:['8 cans sardines with bones','3 cans chickpeas','28 corn tortillas','½ red cabbage','2 limes','1 cup plain yogurt','avocado, cilantro, cumin'],steps:['Warm chickpeas with cumin, garlic and a splash of water; lightly mash.','Shred cabbage and toss with lime juice and salt.','Warm sardines gently in a skillet; keep larger pieces intact.','Blend yogurt, avocado, lime and cilantro into a crema.','Build tacos with chickpeas, sardines, slaw and crema.']},
 {day:'THU',date:'Nov 19',name:'Chicken shawarma & rainbow tray bake',cuisine:'MIDDLE EASTERN',time:'50 min',img:'https://images.unsplash.com/photo-1544025162-d76694265947?w=900',desc:'Spiced chicken thighs with cauliflower, red onion, peppers, herby yogurt and bulgur.',tags:['Protein','Vitamin C','Plant variety'],cost:'$3.05 / serving',ingredients:['4 lb chicken thighs','2 heads cauliflower','3 bell peppers','2 red onions','2 cups dry bulgur','Greek yogurt, lemon, garlic, cumin, paprika'],steps:['Heat oven to 425°F. Toss chicken with yogurt, lemon, garlic, cumin, paprika and salt.','Spread chicken and chopped vegetables on two sheet pans.','Roast 30–40 minutes, until chicken reaches 165°F.','Cook bulgur according to package directions.','Serve with lemon-herb yogurt and chopped parsley.']},
 {day:'FRI',date:'Nov 20',name:'Mushroom-lentil bolognese',cuisine:'ITALIAN',time:'55 min',img:'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=900',desc:'A slow-simmered mushroom and lentil sauce over whole-wheat pasta with parmesan.',tags:['Fiber','Folate','Potassium'],cost:'$1.85 / serving',ingredients:['1 lb whole-wheat pasta','1 lb mushrooms','2 cups cooked lentils','1 onion','2 carrots','28 oz crushed tomatoes','tomato paste, garlic, oregano, parmesan'],steps:['Finely chop mushrooms, onion and carrots.','Brown vegetables in olive oil until deeply caramelized, 12–15 minutes.','Add garlic, tomato paste, tomatoes, lentils and oregano. Simmer 25 minutes.','Cook pasta until al dente; reserve a cup of pasta water.','Toss pasta with sauce and pasta water; finish with parmesan.']}
 ];
 const lunches=[['Greek yogurt power bowls','Greek yogurt, berries, toasted oats, pumpkin seeds and ground flax.','10 min','https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400'],['Hummus & egg mezze plates','Hummus, boiled eggs, whole-grain pita, cucumbers, tomatoes and olives.','12 min','https://images.unsplash.com/photo-1547592180-85f173990554?w=400'],['Sardine-avocado toast','Whole-grain toast, mashed avocado, sardines, lemon and crunchy radish.','8 min','https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400'],['Leftover shawarma grain wraps','Chicken, bulgur, greens, yogurt sauce and crunchy vegetables in a wrap.','10 min','https://images.unsplash.com/photo-1547592180-85f173990554?w=400']];
 let additions=[];let checked={};let eaten={};let current='menu';
-const recs=[{id:'beans',name:'Add a kiwi + pumpkin-seed snack',target:'Vitamin C · Magnesium · Zinc',why:'Kiwi adds vitamin C; pumpkin seeds contribute magnesium, zinc and unsaturated fats.',portion:'1 kiwi + 1 tbsp pumpkin seeds per adult; smaller child portions as wanted.',add:'Snack: kiwi and pumpkin seeds',delta:{iron:2,magnesium:8,vitaminc:12},shop:['6 kiwis','1 small bag pumpkin seeds']},{id:'yogurt',name:'Add kefir or yogurt at breakfast',target:'Calcium · B12 · Protein',why:'A fermented dairy serving can strengthen calcium and B12 coverage; choose plain and add fruit.',portion:'½–1 cup per person, adjusted for appetite and age.',add:'Breakfast add-on: plain kefir or yogurt with berries',delta:{calcium:10,b12:14,protein:7},shop:['2 large tubs plain yogurt or kefir','1 bag frozen berries']},{id:'greens',name:'Enhance two dinners with leafy greens',target:'Vitamin K · Folate · Magnesium',why:'A quick sauté of spinach or chard adds leafy-green diversity and several commonly under-consumed micronutrients.',portion:'½ cup cooked per adult; offer child-sized tastes without pressure.',add:'Side: garlicky spinach with lemon (two dinners)',delta:{folate:13,vitamink:22,magnesium:6},shop:['2 large bags baby spinach','1 bulb garlic']},{id:'shellfish',name:'Add mussels to one seafood meal',target:'B12 · Iron · Zinc · Selenium',why:'Mussels are especially nutrient-dense and diversify seafood beyond salmon and sardines.',portion:'3–4 oz cooked adult serving; child portions smaller and age-appropriate.',add:'Swap one protein: steamed mussels with garlic and herbs',delta:{b12:24,iron:10,zinc:13},shop:['3 lb mussels','1 bunch parsley','1 lemon']}];
-let shopping=[['PRODUCE','2 cucumbers','3 carrots','2 avocados','1 large onion','2 red onions','2 heads cauliflower','3 bell peppers','1 bunch kale','½ red cabbage','2 limes','1 lemon','1 bunch parsley','1 bulb garlic'],['MEAT & SEAFOOD','2.5 lb salmon','3 lb beef chuck','8 cans sardines','4 lb chicken thighs'],['DAIRY & EGGS','Plain Greek yogurt','Parmesan'],['PANTRY & GRAINS','Brown rice','Cannellini beans (2 cans)','Chickpeas (3 cans)','Corn tortillas','Bulgur','Whole-wheat pasta','Lentils (2 cups cooked)','Crushed tomatoes (2 × 28 oz)','Miso, honey, tamari','Olive oil, spices']];
+const recs = [
+  {id:'beans', name:'Add kiwi and pumpkin seeds', portion:'One snack for seven, estimated at one kiwi and a tablespoon of seeds per serving.', add:'Kiwi and pumpkin-seed snack', shop:['7 kiwis','1 small bag pumpkin seeds']},
+  {id:'yogurt', name:'Add plain yogurt and berries', portion:'One breakfast addition for seven, estimated at 170 g yogurt and 75 g berries per serving.', add:'Plain yogurt and berries', shop:['About 1.2 kg plain yogurt','About 525 g frozen berries']},
+  {id:'greens', name:'Serve spinach at two dinners', portion:'Two sides for seven, estimated at ½ cup cooked spinach per person each time.', add:'Spinach at two dinners', shop:['Spinach for 7 cups cooked']},
+  {id:'shellfish', name:'Add steamed mussels', portion:'One add-on for seven, estimated at 3 oz cooked mussel meat per serving.', add:'Steamed mussels', shop:['Mussels for about 21 oz cooked meat']},
+];
+const lunchGroceries = [
+  ['Greek yogurt','Blueberries','Oats','Pumpkin seeds','Ground flaxseed'],
+  ['Hummus','Eggs','Whole-wheat pita','Cucumber','Tomatoes','Olives'],
+  ['Sardines','Avocado','Whole-wheat bread','Lime','Radishes'],
+  ['Leftover chicken and bulgur','Leafy greens','Greek yogurt','Whole-wheat wraps'],
+];
+function groceryGroups() {
+  return [...meals.map(meal => [meal.name, ...meal.ingredients]),
+    ['QUICK LUNCHES', ...new Set(lunchGroceries.flat())]];
+}
 function showToast(s){let t=document.getElementById('toast');t.textContent=s;t.classList.remove('hide');setTimeout(()=>t.classList.add('hide'),2100)}
 function setView(v){current=v;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===v));render()}
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
 function menuView(){return `<div class="section-head"><div><h3>Dinner, handled.</h3><p>Five flavor-forward dinners · serves 7</p></div><button class="btn light" onclick="showToast('Your menu is saved on this device.')">Save week</button></div><div class="grid">${meals.map((m,i)=>`<article class="meal"><img src="${m.img}" alt="${m.name}" loading="lazy"><div class="meal-body"><div class="meal-top"><span class="pill">${m.day} · ${m.date}</span><span style="font-size:11px;color:var(--muted)">${m.time}</span></div><h4>${m.name}</h4><p>${m.desc}</p><div class="meal-foot"><span>${m.cuisine}</span><button class="link" onclick="openRecipe(${i})">Recipe ↗</button></div></div></article>`).join('')}</div><div class="section-head"><div><h3>Fast lunches</h3><p>Four low-effort ideas · serves 3–4</p></div></div><div class="panel">${lunches.map(l=>`<div class="lunch"><img src="${l[3]}" alt="" loading="lazy"><div><h4>${l[0]}</h4><p>${l[1]}</p><small style="color:var(--green)">${l[2]} · quick assembly</small></div></div>`).join('')}</div><div class="note">This starter week is a sample plan, not a full-day nutrition prescription. Breakfasts, snacks, drinks and actual portions eaten are not yet included in the nutrient estimate.</div>`}
-function coachView(){let base=[['Protein',72],['Fiber',44],['Omega-3',68],['Calcium',48],['Iron',61],['Magnesium',42],['Vitamin D',35],['Vitamin C',77],['Folate',58],['Vitamin K',39],['B12',82],['Zinc',66]];let mods=additions.reduce((a,r)=>{Object.entries(r.delta).forEach(([k,v])=>a[k]=(a[k]||0)+v);return a},{});let rows=base.map(([n,v])=>{let key=n.toLowerCase().replace(' ','');let delta=mods[key]||0;let val=Math.min(100,v+delta);return `<div class="nutrient"><span>${n}</span><div class="bar"><div class="fill ${val<45?'low':val<60?'warn':''}" style="width:${val}%"></div></div><strong>${val}%</strong></div>`}).join('');return `<div class="section-head"><div><h3>Nutrient snapshot</h3><p>Illustrative planned-meal coverage indicators</p></div><span class="pill">${additions.length} coach actions</span></div><div class="panel"><div class="stats"><div class="stat"><strong>27</strong><span>plant foods</span></div><div class="stat"><strong>3</strong><span>seafood meals</span></div><div class="stat"><strong>${additions.length}</strong><span>gap actions added</span></div><div class="stat"><strong>${Object.keys(eaten).length}</strong><span>meals confirmed eaten</span></div></div>${rows}<div class="note"><b>Important:</b> These percentages are demo indicators, not calculated nutrient adequacy. A real version must calculate ingredient-level nutrient totals against age- and sex-appropriate reference values, account for recipe yields and actual servings, and include breakfast/snacks before making daily adequacy claims. Planned meals are not counted as eaten until confirmed.</div></div><div class="section-head"><div><h3>Nutrient Gap Coach</h3><p>Choose an addition to update your projected plan and grocery list.</p></div></div><div class="coach">${recs.map(r=>`<article class="rec"><small>${r.target}</small><h4>${r.name}</h4><p>${r.why}</p><p><b>Portion guide:</b> ${r.portion}</p><button class="btn" onclick="addRec('${r.id}')">＋ Add to plan</button></article>`).join('')}</div>${additions.length?`<div class="section-head"><div><h3>Added to your plan</h3><p>Projected only · confirm after eating</p></div></div><div class="panel">${additions.map(r=>`<div class="shopitem"><span>✓ ${r.add}</span><button class="link" onclick="removeRec('${r.id}')">Remove</button></div>`).join('')}</div>`:''}`}
+// USDA FoodData Central SR Legacy IDs and nutrient amounts per 100 g.
+const foodNutrients = {
+  "168153": [1.14, 3.0, 34.0, 0.31, 17.0, 312.0, 92.7, 0.0],
+  "168155": [0.7, 2.8, 33.0, 0.6, 6.0, 102.0, 29.1, 0.0],
+  "168409": [0.65, 0.5, 16.0, 0.28, 13.0, 147.0, 2.8, 0.0],
+  "168411": [11.91, 5.2, 63.0, 2.27, 64.0, 436.0, 6.1, 0.0],
+  "168421": [2.92, 4.1, 254.0, 1.6, 33.0, 348.0, 93.4, 0.0],
+  "168462": [2.86, 2.2, 99.0, 2.71, 79.0, 558.0, 28.1, 0.0],
+  "168463": [2.97, 2.4, 136.0, 3.57, 87.0, 466.0, 9.8, 0.0],
+  "168660": [19.18, 0.0, 17.0, 2.08, 19.0, 332.0, 0.0, 0.1],
+  "169094": [0.84, 1.6, 88.0, 6.28, 4.0, 8.0, 0.9, 0.0],
+  "169249": [1.36, 1.3, 36.0, 0.86, 13.0, 194.0, 9.2, 0.0],
+  "169251": [3.09, 1.0, 3.0, 0.5, 9.0, 318.0, 2.1, 0.2],
+  "169276": [0.68, 1.6, 25.0, 0.34, 10.0, 233.0, 14.8, 0.0],
+  "169414": [18.29, 27.3, 255.0, 5.73, 392.0, 813.0, 0.6, 0.0],
+  "169703": [7.54, 3.6, 9.0, 1.29, 116.0, 250.0, 0.0, 0.0],
+  "169705": [16.89, 10.6, 54.0, 4.72, 177.0, 429.0, 0.0, 0.0],
+  "169738": [13.87, 9.2, 29.0, 3.62, 128.0, 434.0, 0, 0.0],
+  "169977": [1.43, 2.1, 45.0, 0.8, 16.0, 243.0, 57.0, 0.0],
+  "169986": [1.92, 2.0, 22.0, 0.42, 15.0, 299.0, 48.2, 0.0],
+  "170000": [1.1, 1.7, 23.0, 0.21, 10.0, 146.0, 7.4, 0.0],
+  "170108": [0.99, 2.1, 7.0, 0.43, 12.0, 211.0, 127.7, 0.0],
+  "170287": [3.08, 4.5, 10.0, 0.96, 32.0, 68.0, 0.0, 0.0],
+  "170393": [0.93, 2.8, 33.0, 0.3, 12.0, 320.0, 5.9, 0.0],
+  "170457": [0.88, 1.2, 10.0, 0.27, 11.0, 237.0, 13.7, 0.0],
+  "170501": [1.64, 1.9, 34.0, 1.3, 20.0, 293.0, 9.2, 0.0],
+  "170556": [30.23, 6.0, 46.0, 8.82, 592.0, 809.0, 1.9, 0.0],
+  "170688": [12.29, 12.5, 35.0, 2.46, 164.0, 410.0, 0.0, 0.0],
+  "170848": [35.75, 0.0, 1184.0, 0.82, 44.0, 92.0, 0.0, 0.5],
+  "170903": [9.95, 0.0, 115.0, 0.04, 11.0, 141.0, 0.8, 0.0],
+  "171284": [3.47, 0.0, 121.0, 0.05, 12.0, 155.0, 0.5, 0.1],
+  "171287": [12.56, 0.0, 56.0, 1.75, 12.0, 138.0, 0.0, 2.0],
+  "171705": [2.0, 6.7, 12.0, 0.55, 29.0, 485.0, 10.0, 0.0],
+  "171711": [0.74, 2.4, 6.0, 0.28, 6.0, 77.0, 9.7, 0.0],
+  "172421": [9.02, 7.9, 19.0, 3.33, 36.0, 369.0, 1.5, 0.0],
+  "172442": [12.79, 5.4, 57.0, 2.49, 48.0, 210.0, 0.0, 0.0],
+  "172688": [12.45, 6.0, 161.0, 2.47, 75.0, 254.0, 0.0, 0.0],
+  "172850": [18.73, 0.0, 21.0, 1.17, 21.0, 213.0, 0.0, 0.4],
+  "173627": [19.66, 0.0, 7.0, 0.81, 23.0, 242.0, 0.0, 0.0],
+  "173800": [7.05, 6.4, 45.0, 1.07, 26.0, 126.0, 0.1, 0.0],
+  "174217": [23.8, 0.0, 33.0, 6.72, 37.0, 268.0, 13.6, 0],
+  "174289": [7.78, 5.5, 47.0, 2.54, 75.0, 312.0, 0.0, 0.0],
+  "174916": [9.8, 6.1, 15.0, 3.06, 69.0, 170.0, 0.0, 0.0],
+  "175036": [5.7, 6.3, 81.0, 1.23, 72.0, 186.0, 0.0, 0.0],
+  "175139": [24.62, 0.0, 382.0, 2.92, 39.0, 397.0, 0.0, 4.8],
+  "175167": [20.42, 0.0, 9.0, 0.34, 27.0, 363.0, 3.9, 11.0],
+  "175179": [20.1, 0, 64.0, 0.52, 35.0, 264.0, 0, 0],
+  "175204": [7.26, 4.8, 73.0, 2.99, 51.0, 454.0, 0.0, 0.0],
+};
+const dinnerPortions = {
+  "2.5 lb salmon": [175167, 1134],
+  "4 cups dry brown rice": [169703, 740],
+  "2 cups shelled edamame": [168411, 310],
+  "2 cucumbers": [168409, 402],
+  "3 carrots": [170393, 183],
+  "2 avocados": [171705, 300],
+  "white miso, honey, rice vinegar, tamari": [172442, 90],
+  "3 lb beef chuck": [168660, 1361],
+  "2 cans cannellini beans": [175204, 510],
+  "1 large onion": [170000, 150],
+  "2 carrots": [170393, 122],
+  "1 bunch kale": [168421, 200],
+  "28 oz crushed tomatoes": [170501, 794],
+  "8 cans sardines with bones": [175139, 680],
+  "8 cans boneless sardines with bones": [175139, 680],
+  "3 cans chickpeas": [173800, 765],
+  "28 corn tortillas": [175036, 672],
+  "½ red cabbage": [169977, 420],
+  "2 limes": [168155, 60],
+  "1 cup plain yogurt": [171284, 245],
+  "avocado, cilantro, cumin": [171705, 150],
+  "4 lb chicken thighs": [173627, 1360],
+  "2 heads cauliflower": [169986, 1100],
+  "3 bell peppers": [170108, 357],
+  "2 red onions": [170000, 300],
+  "2 cups dry bulgur": [170688, 280],
+  "Greek yogurt, lemon, garlic, cumin, paprika": [170903, 245],
+  "1 lb whole-wheat pasta": [169738, 454],
+  "1 lb mushrooms": [169251, 454],
+  "2 cups cooked lentils": [172421, 396],
+  "1 onion": [170000, 110],
+  "tomato paste, garlic, oregano, parmesan": [170848, 40],
+  "2.5 lb peeled shrimp": [175179, 1134],
+  "2 cups edamame": [168411, 310],
+  "½ cabbage": [169977, 420],
+  "2.5 lb ground turkey": [172850, 1134],
+  "1 egg": [171287, 50],
+  "garlic, oregano, parmesan": [170848, 40],
+  "4 cans chickpeas": [173800, 1020],
+  "2 bags spinach": [168462, 284],
+  "4 cups dry rice": [169703, 740],
+};
+const lunchPortions = [[[170903, 170], [171711, 75], [169705, 30], [170556, 10], [169414, 7]], [[174289, 60], [171287, 50], [174916, 60], [168409, 60], [170457, 65], [169094, 20]], [[175139, 60], [171705, 60], [172688, 56], [168155, 10], [169276, 35]], [[173627, 100], [170287, 70], [169249, 25], [170903, 45], [174916, 60]]];
+const coachPortions = {
+  "beans": [[168153, 75], [170556, 10]],
+  "yogurt": [[171284, 170], [171711, 75]],
+  "greens": [[168463, 180]],
+  "shellfish": [[174217, 85]],
+};
+
+const nutrientTargets = [
+  ['Protein', 50], ['Fiber', 28], ['Calcium', 1300], ['Iron', 18],
+  ['Magnesium', 420], ['Potassium', 4700], ['Vitamin C', 90], ['Vitamin D', 20],
+];
+
+function estimateNutrients(portions) {
+  return nutrientTargets.map((_, axis) => portions.reduce(
+    (total, [id, grams]) => total + foodNutrients[id][axis] * grams / 100, 0
+  ));
+}
+
+function dinnerNutrients(meal) {
+  return estimateNutrients(meal.ingredients.flatMap(line => {
+    const portion = Object.hasOwn(dinnerPortions, line) ? dinnerPortions[line] : null;
+    return portion ? [portion] : [];
+  })).map(amount => amount / 7);
+}
+
+function weeklyNutrients(selected) {
+  const dinners = meals.map(dinnerNutrients);
+  const lunches = lunchPortions.map(estimateNutrients);
+  const extras = selected.map(rec => estimateNutrients(coachPortions[rec.id]));
+  return nutrientTargets.map((_, axis) =>
+    dinners.reduce((sum, meal) => sum + meal[axis], 0) +
+    lunches.reduce((sum, meal) => sum + meal[axis] / 2, 0) +
+    extras.reduce((sum, meal) => sum + meal[axis], 0)
+  );
+}
+
+function weeklyCoverage(amounts) {
+  return amounts.map((amount, i) => Math.min(100, 100 * amount / (7 * nutrientTargets[i][1])));
+}
+
+function coverageScore(coverage) {
+  return coverage.reduce((sum, value) => sum + value, 0) / coverage.length;
+}
+
+function formatCoverage(value) {
+  if (value === 0 || value === 100) return String(value);
+  if (value < 0.1) return '<0.1';
+  if (value > 99.9) return '>99.9';
+  return value.toFixed(1);
+}
+
+function nutrientRadar(coverage) {
+  const point = (i, scale) => {
+    const angle = 2 * Math.PI * i / nutrientTargets.length - Math.PI / 2;
+    return [160 + 88 * scale * Math.cos(angle), 134 + 88 * scale * Math.sin(angle)];
+  };
+  const polygon = scales => nutrientTargets.map((_, i) => point(i, scales(i)).join(',')).join(' ');
+  return `<svg viewBox="0 0 320 268" width="100%" style="display:block;max-width:420px;margin:auto" aria-hidden="true">
+    ${[.25, .5, .75, 1].map(level => `<polygon points="${polygon(() => level)}" fill="none" stroke="#adb9a7"/>`).join('')}
+    ${nutrientTargets.map(([name], i) => {
+      const [x, y] = point(i, 1);
+      const [labelX, labelY] = point(i, 1.32);
+      return `<line x1="160" y1="134" x2="${x}" y2="${y}" stroke="#adb9a7"/>
+        <text x="${labelX}" y="${labelY}" fill="currentColor" text-anchor="middle" dominant-baseline="middle" font-size="11">${name}</text>`;
+    }).join('')}
+    <polygon points="${polygon(i => coverage[i] / 100)}" fill="#34764b" fill-opacity=".32" stroke="#34764b" stroke-width="2"/>
+  </svg>`;
+}
+
+function coachView() {
+  const coverage = weeklyCoverage(weeklyNutrients(additions));
+  const score = coverageScore(coverage);
+  const gaps = nutrientTargets.map(([name], i) => ({name, i, value: coverage[i]}))
+    .sort((a, b) => a.value - b.value);
+  const available = recs.filter(rec => !additions.some(item => item.id === rec.id))
+    .map(rec => {
+      const projected = weeklyCoverage(weeklyNutrients([...additions, rec]));
+      const gain = gaps.slice(0, 3).reduce((sum, gap) => sum + projected[gap.i] - gap.value, 0);
+      return {rec, projected, gain};
+    }).sort((a, b) => b.gain - a.gain);
+  const rows = gaps.map(({name, value}) => `<div class="nutrient">
+    <span>${name}</span><div class="bar"><div class="fill" style="width:${value}%"></div></div>
+    <strong>${esc(formatCoverage(value))}%</strong></div>`).join('');
+  const unmatched = [...new Set(meals.flatMap(meal =>
+    meal.ingredients.filter(line => !Object.hasOwn(dinnerPortions, line))))];
+  const perMeal = [...meals.map(meal => [meal.name, dinnerNutrients(meal)]),
+    ...lunches.map((lunch, i) => [lunch[0], estimateNutrients(lunchPortions[i])])]
+    .map(([name, amounts]) => `<details><summary>${esc(name)}</summary><ul>
+      ${nutrientTargets.map(([label, target], i) =>
+        `<li>${label} · ${Math.round(amounts[i] / target * 100)}% daily reference per serving</li>`).join('')}
+    </ul></details>`).join('');
+  return `<div class="section-head"><div><h3>Nutrient coverage</h3><p>Estimated contribution from the meals in this plan</p></div></div>
+    <div class="panel"><div class="stat" aria-live="polite"><strong>${esc(formatCoverage(score))} / 100</strong><span>Weekly planned-food score</span></div>
+    ${nutrientRadar(coverage)}${rows}
+    <div class="note">The score averages eight nutrient percentages, capping each at 100%. It uses seven days of FDA label Daily Values as a shared reference. Dinners count for seven, lunches assume an average of 3.5 servings across seven people, and selected additions count as planned. Estimates use USDA food matches and approximate portions. Unmatched ingredients and unplanned meals are excluded. Individual needs and actual intake vary.</div>
+    ${unmatched.length ? `<details><summary>${unmatched.length} ingredient entries excluded from the estimate</summary>
+      <ul>${unmatched.map(line => `<li>${esc(line)}</li>`).join('')}</ul></details>` : ''}
+    <details><summary>Estimates by meal</summary>${perMeal}</details></div>
+    <div class="section-head"><div><h3>Nutrient Gap Coach</h3><p>Suggestions are ordered by contribution to the three lowest nutrients.</p></div></div>
+    <div class="coach">${available.map(({rec, projected}) => `<article class="rec">
+    <h4>${rec.name}</h4><p>${rec.portion}</p>
+    <p>Projected score <strong>${esc(formatCoverage(coverageScore(projected)))} / 100</strong></p>
+    <button class="btn" onclick="addRec('${rec.id}')">Add to plan</button></article>`).join('')}</div>
+    ${additions.length ? `<div class="section-head"><div><h3>Added to your plan</h3></div></div>
+    <div class="panel">${additions.map(rec => `<div class="shopitem"><span>${rec.add}</span>
+    <button class="link" onclick="removeRec('${rec.id}')">Undo</button></div>`).join('')}</div>` : ''}`;
+}
+
 function recipeView(){return `<div class="section-head"><div><h3>Recipe collection</h3><p>Complete dinner recipes scaled for seven</p></div></div><div class="panel">${meals.map((m,i)=>`<div class="lunch"><img src="${m.img}" alt=""><div style="flex:1"><h4>${m.name}</h4><p>${m.time} · ${m.cuisine}</p></div><button class="btn light" onclick="openRecipe(${i})">Open</button></div>`).join('')}</div><div class="note">Cooking temperatures and times are included in the steps. Use a food thermometer for doneness; poultry 165°F, fish 145°F and whole cuts/ground meats according to safe handling guidance.</div>`}
-function shopView(){let groups=shopping.map(([g,...items])=>`<div class="shopgroup"><h4>${g}</h4>${items.map(it=>{let id=it.toLowerCase().replace(/[^a-z0-9]/g,'');return `<label class="shopitem ${checked[id]?'done':''}"><input type="checkbox" ${checked[id]?'checked':''} onchange="toggleShop('${id}')"><span>${it}</span></label>`}).join('')}</div>`).join('');let extra=additions.flatMap(r=>r.shop);return `<div class="section-head"><div><h3>Grocery run</h3><p>Grouped by aisle · check off as you shop</p></div><button class="btn light" onclick="window.print()">Print list</button></div><div class="panel"><div class="stats"><div class="stat"><strong>Walmart</strong><span>pantry, grains, dairy, frozen & everyday produce</span></div><div class="stat"><strong>Tom Thumb</strong><span>seafood, specialty produce & meat cuts</span></div><div class="stat"><strong>$14.45</strong><span>sample dinner cost per person, not a live quote</span></div><div class="stat"><strong>${Object.values(checked).filter(Boolean).length}</strong><span>items checked</span></div></div><div class="shopping">${groups}</div>${extra.length?`<div class="section-head"><div><h3>Coach additions</h3><p>Automatically added when you choose a recommendation</p></div></div>${extra.map(x=>`<label class="shopitem"><input type="checkbox"><span>${x}</span></label>`).join('')}`:''}<div class="note">Store assignments and costs are planning defaults only. Prices and availability are not live-checked. Pantry inventory and order placement are not connected in this prototype.</div></div>`}
+
 function render(){document.getElementById('main').innerHTML=current==='menu'?menuView():current==='coach'?coachView():current==='recipes'?recipeView():shopView();document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===current))}
 function openRecipe(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><span class="pill">${m.cuisine} · SERVES 7</span><h3 style="font:700 27px Georgia;margin:12px 0">${m.name}</h3><div class="recipe"><img src="${m.img}" alt=""><div><b>Ingredients</b><ul>${m.ingredients.map(x=>`<li>${x}</li>`).join('')}</ul></div></div><h4>Method</h4><ol>${m.steps.map(x=>`<li>${x}</li>`).join('')}</ol><p style="font-size:12px;color:var(--muted)">Estimated cost: ${m.cost}. Nutrient tags: ${m.tags.join(' · ')}.</p><button class="btn" onclick="markEaten(${i})">${eaten[i]?'✓ Confirmed eaten':'Mark as eaten'}</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
 function closeModal(){document.getElementById('modal').classList.add('hide')}
@@ -48,20 +262,20 @@ const mealAlternates=[
  {name:'Turkey meatballs with tomato-lentil sauce',cuisine:'ITALIAN-INSPIRED',time:'45 min',desc:'Herby turkey meatballs simmered in tomato and lentil sauce with whole-grain pasta.',tags:['Iron','Fiber','Protein'],cost:'$2.70 / serving',ingredients:['2.5 lb ground turkey','2 cups cooked lentils','28 oz crushed tomatoes','1 lb whole-wheat pasta','1 egg','garlic, oregano, parmesan'],steps:['Mix turkey, egg, garlic and herbs; form meatballs.','Brown meatballs in a Dutch oven.','Add tomatoes and lentils; simmer until meatballs reach 165°F.','Cook pasta and serve with sauce and parmesan.']},
  {name:'Coconut chickpea & spinach curry',cuisine:'SOUTH ASIAN-INSPIRED',time:'35 min',desc:'Chickpeas and spinach in a fragrant tomato-coconut curry over brown rice.',tags:['Fiber','Folate','Magnesium'],cost:'$1.95 / serving',ingredients:['4 cans chickpeas','2 cans light coconut milk','1 large onion','2 bags spinach','28 oz crushed tomatoes','4 cups dry rice','curry spices, ginger, garlic'],steps:['Cook rice.','Soften onion, ginger and garlic; add curry spices.','Stir in tomatoes, coconut milk and chickpeas; simmer 20 minutes.','Fold in spinach until wilted.','Serve over rice with yogurt and lime if desired.']}
 ];
-function persistState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({meals,additions:additions.map(x=>x.id),checked,eaten,lunchDone,shopping}));let el=document.getElementById('saveStatus');if(el)el.textContent='Saved on this device · '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});}catch(e){let el=document.getElementById('saveStatus');if(el)el.textContent='Browser storage unavailable; use Export groceries.'}}
+function persistState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({meals,additions:additions.map(x=>x.id),checked,eaten,lunchDone}));let el=document.getElementById('saveStatus');if(el)el.textContent='Saved on this device · '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});}catch(e){let el=document.getElementById('saveStatus');if(el)el.textContent='Browser storage unavailable; use Export groceries.'}}
 let lunchDone={};
-function loadState(){try{let x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!x)return;if(Array.isArray(x.meals)&&x.meals.length===5){x.meals.forEach((m,i)=>Object.assign(meals[i],m));}additions=(x.additions||[]).map(id=>recs.find(r=>r.id===id)).filter(Boolean);checked=x.checked||{};eaten=x.eaten||{};lunchDone=x.lunchDone||{};if(Array.isArray(x.shopping))shopping=x.shopping;}catch(e){console.warn('Saved Family Fuel data could not be loaded',e)}}
+function loadState(){try{let x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!x)return;if(Array.isArray(x.meals)&&x.meals.length===5){x.meals.forEach((m,i)=>Object.assign(meals[i],m));}additions=(x.additions||[]).map(id=>recs.find(r=>r.id===id)).filter(Boolean);checked=x.checked||{};eaten=x.eaten||{};lunchDone=x.lunchDone||{};}catch(e){console.warn('Saved Family Fuel data could not be loaded',e)}}
 function saveWeek(){persistState();showToast('Family Fuel changes saved on this device.')}
 function resetWeek(){if(!confirm('Reset the sample menu, coach actions and grocery checkmarks?'))return;localStorage.removeItem(STORAGE_KEY);location.reload()}
-function menuView(){return `<div class="section-head"><div><h3>Dinner, handled.</h3><p>Five flavor-forward dinners · serves 7 · tap a recipe or edit a meal</p></div><button class="btn light" onclick="regenWeek()">↻ Regenerate week</button></div><div class="grid">${meals.map((m,i)=>`<article class="meal"><img src="${m.img}" alt="${m.name}" loading="lazy"><div class="meal-body"><div class="meal-top"><span class="pill">${m.day} · ${m.date}</span><span style="font-size:11px;color:var(--muted)">${m.time}</span></div><h4>${m.name}</h4><p>${m.desc}</p><div class="meal-foot"><span>${m.cuisine}</span><span>${eaten[i]?'✓ Eaten':'Planned'}</span></div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" onclick="openRecipe(${i})">View recipe</button><button class="btn light" onclick="openEditor(${i})">Edit</button><button class="btn outline" onclick="swapMeal(${i})">Swap</button></div></div></article>`).join('')}</div><div class="section-head"><div><h3>Fast lunches</h3><p>Four low-effort ideas · serves 3–4 · tick when made</p></div></div><div class="panel">${lunches.map((l,i)=>`<div class="lunch"><img src="${l[3]}" alt="" loading="lazy"><div style="flex:1"><h4>${l[0]}</h4><p>${l[1]}</p><small style="color:var(--green)">${l[2]} · quick assembly</small></div><label style="font-size:12px;white-space:nowrap"><input type="checkbox" ${lunchDone[i]?'checked':''} onchange="toggleLunch(${i},this.checked)"> Made</label></div>`).join('')}</div><div class="note">The sample nutrient bars are illustrative only—not calculated ingredient-level nutrient adequacy. This plan covers only listed meals; breakfast, snacks, drinks, actual portions and individual needs are not fully captured.</div>`}
+function menuView(){return `<div class="section-head"><div><h3>Dinner, handled.</h3><p>Five flavor-forward dinners · serves 7 · tap a recipe or edit a meal</p></div><button class="btn light" onclick="regenWeek()">↻ Regenerate week</button></div><div class="grid">${meals.map((m,i)=>`<article class="meal"><img src="${m.img}" alt="${m.name}" loading="lazy"><div class="meal-body"><div class="meal-top"><span class="pill">${m.day} · ${m.date}</span><span style="font-size:11px;color:var(--muted)">${m.time}</span></div><h4>${m.name}</h4><p>${m.desc}</p><div class="meal-foot"><span>${m.cuisine}</span><span>${eaten[i]?'✓ Eaten':'Planned'}</span></div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" onclick="openRecipe(${i})">View recipe</button><button class="btn light" onclick="openEditor(${i})">Edit</button><button class="btn outline" onclick="swapMeal(${i})">Swap</button></div></div></article>`).join('')}</div><div class="section-head"><div><h3>Fast lunches</h3><p>Four low-effort ideas · serves 3–4 · tick when made</p></div></div><div class="panel">${lunches.map((l,i)=>`<div class="lunch"><img src="${l[3]}" alt="" loading="lazy"><div style="flex:1"><h4>${l[0]}</h4><p>${l[1]}</p><small style="color:var(--green)">${l[2]} · quick assembly</small></div><label style="font-size:12px;white-space:nowrap"><input type="checkbox" ${lunchDone[i]?'checked':''} onchange="toggleLunch(${i},this.checked)"> Made</label></div>`).join('')}</div><div class="note">The Nutrient Coach estimates coverage from the meals and additions in this plan.</div>`}
 function openEditor(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><h3 style="font:700 25px Georgia">Edit ${m.day} dinner</h3><label>Meal name<input id="editName" value="${esc(m.name)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Description<textarea id="editDesc" style="width:100%;min-height:76px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.desc)}</textarea></label><label>Cuisine<input id="editCuisine" value="${esc(m.cuisine)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Prep/cook time<input id="editTime" value="${esc(m.time)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Ingredients (one per line)<textarea id="editIngredients" style="width:100%;min-height:120px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.ingredients.join('\n'))}</textarea></label><label>Cooking steps (one per line)<textarea id="editSteps" style="width:100%;min-height:140px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.steps.join('\n'))}</textarea></label><button class="btn" onclick="saveMealEdit(${i})">Save meal</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function saveMealEdit(i){let m=meals[i];m.name=document.getElementById('editName').value.trim()||m.name;m.desc=document.getElementById('editDesc').value.trim();m.cuisine=document.getElementById('editCuisine').value.trim();m.time=document.getElementById('editTime').value.trim();m.ingredients=document.getElementById('editIngredients').value.split('\n').map(x=>x.trim()).filter(Boolean);m.steps=document.getElementById('editSteps').value.split('\n').map(x=>x.trim()).filter(Boolean);closeModal();persistState();render();showToast('Meal updated.')}
-function swapMeal(i){let m=meals[i],alt=mealAlternates[(m.altIndex||0)%mealAlternates.length];Object.assign(m,alt,{altIndex:((m.altIndex||0)+1)%mealAlternates.length});persistState();render();showToast('Dinner swapped. Open it to review the recipe.')}
+function swapMeal(i){let m=meals[i],alt=mealAlternates[(m.altIndex||0)%mealAlternates.length];Object.assign(m,alt,{altIndex:((m.altIndex||0)+1)%mealAlternates.length});delete eaten[i];persistState();render();showToast('Dinner swapped. Open it to review the recipe.')}
 function regenWeek(){if(!confirm('Swap all five dinners for alternate ideas? You can still edit each meal.'))return;meals.forEach((m,i)=>{let a=mealAlternates[i%mealAlternates.length];Object.assign(m,a,{altIndex:(m.altIndex||0)+1});});eaten={};persistState();render();showToast('New dinner lineup created.')}
 function toggleLunch(i,v){lunchDone[i]=v;persistState()}
-function shopView(){let extra=additions.flatMap(r=>r.shop.map(x=>({name:x,id:'coach-'+r.id+'-'+x.toLowerCase().replace(/[^a-z0-9]/g,''),group:'COACH ADDITIONS'})));let groups=shopping.map(([g,...items])=>`<div class="shopgroup"><h4>${g}</h4>${items.map(it=>{let id=it.toLowerCase().replace(/[^a-z0-9]/g,'');return `<label class="shopitem ${checked[id]?'done':''}"><input type="checkbox" ${checked[id]?'checked':''} onchange="toggleShop('${id}')"><span>${it}</span></label>`}).join('')}</div>`).join('');return `<div class="section-head"><div><h3>Grocery run</h3><p>Grouped by aisle · check off as you shop</p></div><button class="btn light" onclick="window.print()">Print list</button></div><div class="panel"><div class="stats"><div class="stat"><strong>Walmart</strong><span>pantry, grains, dairy, frozen & everyday produce</span></div><div class="stat"><strong>Tom Thumb</strong><span>seafood, specialty produce & meat cuts</span></div><div class="stat"><strong>${Object.values(checked).filter(Boolean).length}</strong><span>items checked</span></div><div class="stat"><strong>${shopping.reduce((n,g)=>n+g.length-1,0)+extra.length}</strong><span>listed items</span></div></div><div class="shopping">${groups}</div>${extra.length?`<div class="section-head"><div><h3>Coach additions</h3><p>Added automatically from your selected recommendations</p></div></div><div class="shopping">${extra.map(x=>`<label class="shopitem ${checked[x.id]?'done':''}"><input type="checkbox" ${checked[x.id]?'checked':''} onchange="toggleShop('${x.id}')"><span>${x.name}</span></label>`).join('')}</div>`:''}<div class="note">Store assignments are planning defaults. Prices and availability are not live-checked; pantry inventory and retailer ordering are not connected.</div></div>`}
-function exportShopping(){let rows=[];shopping.forEach(([g,...items])=>{rows.push(g);items.forEach(x=>rows.push((checked[x.toLowerCase().replace(/[^a-z0-9]/g,'')]?'[x] ':'[ ] ')+x))});additions.forEach(r=>{rows.push('COACH ADDITIONS');r.shop.forEach(x=>rows.push('[ ] '+x))});let blob=new Blob([rows.join('\n')],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='family-fuel-shopping-list.txt';a.click();URL.revokeObjectURL(url);showToast('Shopping list exported.')}
+function shopView(){let extra=additions.flatMap(r=>r.shop.map(x=>({name:x,id:'coach-'+r.id+'-'+x.toLowerCase().replace(/[^a-z0-9]/g,''),group:'COACH ADDITIONS'})));let groups=groceryGroups().map(([g,...items])=>`<div class="shopgroup"><h4>${esc(g)}</h4>${items.map(it=>{let id=it.toLowerCase().replace(/[^a-z0-9]/g,'');return `<label class="shopitem ${checked[id]?'done':''}"><input type="checkbox" ${checked[id]?'checked':''} onchange="toggleShop('${id}')"><span>${esc(it)}</span></label>`}).join('')}</div>`).join('');return `<div class="section-head"><div><h3>Grocery run</h3><p>Grouped by meal · check off as you shop</p></div><button class="btn light" onclick="window.print()">Print list</button></div><div class="panel"><div class="stats"><div class="stat"><strong>Walmart</strong><span>pantry, grains, dairy, frozen & everyday produce</span></div><div class="stat"><strong>Tom Thumb</strong><span>seafood, specialty produce & meat cuts</span></div><div class="stat"><strong>${Object.values(checked).filter(Boolean).length}</strong><span>items checked</span></div><div class="stat"><strong>${groceryGroups().reduce((n,g)=>n+g.length-1,0)+extra.length}</strong><span>listed items</span></div></div><div class="shopping">${groups}</div>${extra.length?`<div class="section-head"><div><h3>Coach additions</h3><p>Added automatically from your selected recommendations</p></div></div><div class="shopping">${extra.map(x=>`<label class="shopitem ${checked[x.id]?'done':''}"><input type="checkbox" ${checked[x.id]?'checked':''} onchange="toggleShop('${x.id}')"><span>${x.name}</span></label>`).join('')}</div>`:''}<div class="note">Store assignments are planning defaults. Prices and availability are not live-checked; pantry inventory and retailer ordering are not connected.</div></div>`}
+function exportShopping(){let rows=[];groceryGroups().forEach(([g,...items])=>{rows.push(g);items.forEach(x=>rows.push((checked[x.toLowerCase().replace(/[^a-z0-9]/g,'')]?'[x] ':'[ ] ')+x))});additions.forEach(r=>{rows.push('COACH ADDITIONS');r.shop.forEach(x=>rows.push('[ ] '+x))});let blob=new Blob([rows.join('\n')],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='family-fuel-shopping-list.txt';a.click();URL.revokeObjectURL(url);showToast('Shopping list exported.')}
 function addRec(id){let r=recs.find(x=>x.id===id);if(r&&!additions.some(x=>x.id===id)){additions.push(r);persistState();showToast('Added to projected plan and shopping list');render()}}
 function removeRec(id){additions=additions.filter(x=>x.id!==id);persistState();render()}
 function toggleShop(id){checked[id]=!checked[id];persistState();render()}
