@@ -25,6 +25,9 @@ Starting a new plan records the outgoing week’s score and nutrient coverage in
 
 The import API runs separately on Render as `family-fuel-recipe-import`, using `python3 recipe_import.py` and the `/health` endpoint. The existing app remains on the static site. Imports need internet access.
 
+## Shop the plan
+Shopping Lists groups the current plan’s groceries under Walmart and Tom Thumb. You can move an item between stores, check it off, and export one store or both. Per-item Walmart links open product search. For Tom Thumb, copy the ingredient name and paste it into the retailer’s search. Prices, inventory, and carts are handled on the retailers’ sites.
+
 ## Important current limitations
 - The app still stores changes in this browser's local storage; there is no account or cross-device sync.
 - Grocery prices and retailer ordering are not connected.
