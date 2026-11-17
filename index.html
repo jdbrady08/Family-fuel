@@ -141,6 +141,18 @@ const foodNutrients = {
   "175167": [20.42, 0.0, 9.0, 0.34, 27.0, 363.0, 3.9, 11.0, 58.0, 3.55, 0.5, 0.207, 0.155, 8.672, 0.636, 26.0, 3.23, 0.36, 24.0, 240.0, 0.045, 0.011],
   "175179": [20.1, 0, 64.0, 0.52, 35.0, 264.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.34, 0, 214.0, 0.391, 0.033],
   "175204": [7.26, 4.8, 73.0, 2.99, 51.0, 454.0, 0.0, 0.0, 0.0, 0.79, 2.9, 0.096, 0.037, 0.113, 0.075, 65.0, 0.0, 1.12, 1.6, 91.0, 0.232, 0.515],
+  "168249": [20.95, 0.0, 5.0, 0.98, 27.0, 399.0, 0.0, 0.2, 0.0, 0.22, 0.0, 0.998, 0.342, 6.684, 0.777, 0.0, 0.51, 1.89, 30.8, 247.0, 0.09, 0.015],
+  "169230": [6.36, 2.1, 181.0, 1.7, 25.0, 401.0, 31.2, 0.0, 0.0, 0.08, 1.7, 0.2, 0.11, 0.7, 1.235, 3.0, 0.0, 1.16, 14.2, 153.0, 0.299, 1.672],
+  "169704": [2.74, 1.6, 3.0, 0.56, 39.0, 86.0, 0.0, 0.0, 0.0, 0.17, 0.2, 0.178, 0.069, 2.561, 0.123, 9.0, 0.0, 0.71, 5.8, 103.0, 0.106, 0.974],
+  "170845": [22.17, 0.0, 505.0, 0.44, 20.0, 76.0, 0.0, 0.4, 179.0, 0.19, 2.3, 0.03, 0.283, 0.104, 0.037, 7.0, 2.28, 2.92, 17.0, 354.0, 0.011, 0.03],
+  "171077": [22.5, 0.0, 5.0, 0.37, 28.0, 334.0, 0.0, 0.0, 9.0, 0.56, 0.0, 0.094, 0.177, 9.6, 0.811, 9.0, 0.21, 0.68, 22.8, 213.0, 0.037, 0.011],
+  "171413": [0.0, 0.0, 1.0, 0.56, 0.0, 1.0, 0.0, 0.0, 0.0, 14.35, 60.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+  "171579": [9.83, 1.8, 306.0, 0.57, 47.0, 560.0, 0.0, 0, 77.0, 7.27, 151.1, 0.17, 0.717, 0.523, 0.133, 0, 0, 1.33, 0, 273.0, 0.08, 0.586],
+  "172232": [3.15, 1.6, 177.0, 3.17, 64.0, 295.0, 18.0, 0.0, 264.0, 0.8, 414.8, 0.034, 0.076, 0.902, 0.155, 68.0, 0.0, 0.81, 0.3, 56.0, 0.385, 1.148],
+  "172420": [24.63, 10.7, 35.0, 6.51, 47.0, 677.0, 4.5, 0.0, 2.0, 0.49, 5.0, 0.873, 0.211, 2.605, 0.54, 479.0, 0.0, 3.27, 0.1, 281.0, 0.754, 1.393],
+  "175202": [23.36, 15.2, 240.0, 10.44, 190.0, 1795.0, 0.0, 0.0, 0.0, 0.21, 5.6, 0.437, 0.146, 0.479, 0.318, 388.0, 0.0, 3.67, 12.8, 301.0, 0.984, 1.796],
+  "170499": [2.5, 3.2, 37.0, 1.2, 21.0, 334.0, 8.0, 0.0, 0.0, 0.04, 0.8, 0.06, 0.02, 0.2, 0.345, 34.0, 0.0, 0.4, 1.2, 60.0, 0.088, 0.292],
+  "172336": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 17.46, 71.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
 };
 const dinnerPortions = {
   "2.5 lb salmon": [175167, 1134],
@@ -247,13 +259,136 @@ function estimateNutrients(portions) {
   ));
 }
 
-function dinnerNutrients(meal) {
-  if (meal.imported) {
-    return nutrientTargets.map(([name]) =>
-      name === 'Protein' ? meal.nutrition?.proteinContent || 0 :
-      name === 'Fiber' ? meal.nutrition?.fiberContent || 0 : 0
-    );
+const importFoodCups = {"168153": 180.0, "168409": 104.0, "168411": 155.0, "168421": 21.0, "168462": 30.0, "168463": 180.0, "168483": 200.0, "169097": 180.0, "169230": 136.0, "169249": 36.0, "169251": 70.0, "169276": 116.0, "169414": 168.0, "169703": 185.0, "169704": 202.0, "169705": 156.0, "169738": 91.0, "169967": 156.0, "169977": 89.0, "169986": 107.0, "170000": 160.0, "170108": 149.0, "170187": 117.0, "170287": 182.0, "170393": 128.0, "170457": 149.0, "170501": 242.0, "170556": 129.0, "170562": 46.0, "170567": 143.0, "170688": 140.0, "170845": 112.0, "171267": 244.0, "171284": 245.0, "171287": 243.0, "171413": 216.0, "171579": 252.0, "171705": 150.0, "171711": 148.0, "172232": 24.0, "172420": 192.0, "172421": 198.0, "172442": 275.0, "173424": 136.0, "173944": 225.0, "174289": 246.0, "175139": 149.0, "175202": 202.0, "175204": 262.0};
+const importFoodAvailability = {"169986": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "171267": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "172420": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170501": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "169094": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "172421": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "169097": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "169738": [0, 1, 2, 3, 4, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "174217": [0, 1, 2, 3, 4, 5, 6, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "168462": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "168463": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170000": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "172688": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "169230": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "171284": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "171413": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "173718": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170903": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "171287": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170393": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "172442": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "169249": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "168483": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "169251": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "175139": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170287": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "172850": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "171705": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "168249": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "173627": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "169276": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170556": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "175036": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "171711": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170688": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "175167": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170562": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "171579": [0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 17, 19, 20, 21], "174916": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "171077": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "169414": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170567": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "172232": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170187": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "175179": [0, 2, 3, 4, 5, 17, 19, 20, 21], "174289": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "168660": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "168409": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "168153": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "168411": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "168155": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170457": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170845": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170848": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "175202": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "175204": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "168421": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "169703": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "173800": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "169705": [0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16, 17, 19, 20, 21], "169704": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "169967": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "173424": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "173944": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "169977": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], "170108": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]};
+
+
+importFoodCups[172336] = 218.0;
+importFoodAvailability[172336] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+importFoodAvailability[170499] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+
+// Food matches use USDA SR Legacy IDs already embedded in Family Fuel.
+const importedFoodMatches = [
+  [/\bpork tenderloins?\b/i,168249,450], [/\bchicken breasts?\b/i,171077,174],
+  [/\bchicken thighs?\b/i,173627,125], [/\bground turkey\b/i,172850,null],
+  [/\bground beef\b/i,null,null], [/\bbeef chuck\b/i,168660,null],
+  [/\bcooked (?:brown )?rice\b/i,169704,null], [/\bbrown rice\b/i,169703,null],
+  [/\bdry lentils\b|\blentils,? (?:dry|uncooked)\b/i,172420,null],
+  [/\bcooked lentils\b|\blentils,? cooked\b/i,172421,null],
+  [/\b(?:dry|dried|uncooked) (?:cannellini|white|navy) beans\b/i,175202,null],
+  [/\b(?:cannellini|white|navy) beans\b/i,175204,null],
+  [/\b(?:chickpeas?|garbanzo beans)\b/i,173800,null],
+  [/\bsardines?\b/i,175139,null], [/\bsalmon\b/i,175167,null],
+  [/\bshrimp\b/i,175179,null], [/\btrout\b/i,173718,null],
+  [/\bmussels?\b/i,null,null], [/\bedamame\b/i,168411,null],
+  [/\bmozzarella\b/i,170845,null], [/\bparmesan\b/i,170848,null],
+  [/\bgreek yogurt\b/i,170903,null], [/\b(?:plain )?yogurt\b/i,171284,null],
+  [/\b(?:fortified|2%) milk\b/i,171267,null], [/\bwhole.wheat pasta\b/i,169738,null],
+  [/\bwhole.wheat bread\b/i,172688,28], [/\bwhole.wheat pita\b/i,174916,60],
+  [/\bcorn tortillas?\b/i,175036,24], [/\bbulgur\b/i,170688,null],
+  [/\b(?:rolled )?oats\b/i,169705,null], [/\bolive oil\b/i,171413,null],
+  [/\bpesto\b/i,171579,null], [/\bgarlic\b/i,169230,3],
+  [/\bbasil\b/i,172232,null], [/\bspinach\b/i,168462,null],
+  [/\bkale\b/i,168421,null], [/\bbroccoli\b/i,169967,null],
+  [/\bcauliflower\b/i,169986,550], [/\bcrushed tomatoes\b/i,170501,null],
+  [/\btomatoes?\b/i,170457,123], [/\b(?:bell|sweet|red) peppers?\b(?!\s+(?:flakes|powder))/i,170108,119],
+  [/\bred onions?\b/i,170000,150], [/\bonions?\b/i,170000,110],
+  [/\bcarrots?\b/i,170393,61], [/\bcucumbers?\b/i,168409,201],
+  [/\bavocados?\b/i,171705,150], [/\bmushrooms?\b/i,169251,18],
+  [/\bred cabbage\b/i,169977,840], [/\bsweet potatoes?\b/i,168483,130],
+  [/\beggs?\b/i,171287,50], [/\bblueberries\b/i,171711,null],
+  [/\bkiwis?\b/i,168153,75], [/\bbananas?\b/i,173944,100],
+  [/\boranges?\b/i,169097,100], [/\bradishes\b/i,169276,5],
+  [/\bpumpkin seeds?\b/i,170556,null], [/\bsunflower (?:seeds?|kernels)\b/i,170562,null],
+  [/\bflax(?:seed)?\b/i,169414,null], [/\balmonds?\b/i,170567,null],
+  [/\bwalnuts?\b/i,170187,null], [/\bhummus\b/i,174289,null],
+];
+
+function importedIngredientPortion(line) {
+  const parsed = readIngredientQuantity(line.trim());
+  const match = importedFoodMatches.find(([pattern]) => pattern.test(line));
+  if (!parsed || !match?.[1]) return {line, reason: 'Food or quantity could not be matched'};
+  const [pattern, id, each] = match;
+  let rest = parsed.rest.trim();
+  const unitMatch = rest.match(/^(kg|g|mg|lbs?|pounds?|oz|ounces?|cups?|tbsp|tablespoons?|tsp|teaspoons?|cans?|cloves?|heads?|large|medium|small)\b\.?\s*/i);
+  const unit = unitMatch ? unitMatch[1].toLowerCase() : '';
+  rest = unitMatch ? rest.slice(unitMatch[0].length) : rest;
+  const amount = parsed.amounts.reduce((sum, value) => sum + value, 0) / parsed.amounts.length;
+  const notes = [];
+  if (parsed.amounts.length > 1) notes.push('uses the midpoint of the listed quantity range');
+  let grams;
+  const mass = {kg:1000,g:1,mg:.001,lb:453.592,lbs:453.592,pound:453.592,pounds:453.592,oz:28.3495,ounce:28.3495,ounces:28.3495};
+  if (Object.hasOwn(mass, unit)) {
+    grams = amount * mass[unit];
+  } else if (/^cans?$/.test(unit)) {
+    const packageSize = rest.match(/^\(\s*(\d+(?:\.\d+)?)\s*(oz|ounces?|g|grams?)\b/i);
+    if (packageSize) {
+      grams = amount * Number(packageSize[1]) * (/^g/.test(packageSize[2]) ? 1 : 28.3495);
+      notes.push('uses the listed can weight. Draining changes the edible weight');
+    } else {
+      grams = amount * 255;
+      notes.push('assumes 255 g edible food per can');
+    }
+  } else if (/^(?:cups?|tbsp|tablespoons?|tsp|teaspoons?)$/.test(unit) && importFoodCups[id]) {
+    const fraction = /^(tbsp|tablespoon)/.test(unit) ? 1/16 : /^(tsp|teaspoon)/.test(unit) ? 1/48 : 1;
+    grams = amount * importFoodCups[id] * fraction;
+    notes.push('uses a USDA household measure');
+  } else if ((!unit || /^(?:large|medium|small|cloves?|heads?)$/.test(unit)) && each) {
+    // A number followed by a package, size or weight is ambiguous without a known unit.
+    if (/^[(/\d]/.test(rest)) return {line, reason: 'Package quantity needs review'};
+    grams = amount * each;
+    notes.push('assumes ' + each + ' g edible portion per item');
   }
+  if (!Number.isFinite(grams) || grams <= 0 || grams > 20000) {
+    return {line, reason: 'Measurement needs review'};
+  }
+  return {line, id, grams, notes};
+}
+
+function importedNutrition(meal) {
+  const matched = [];
+  const unmatched = [];
+  for (const line of meal.ingredients || []) {
+    const portion = importedIngredientPortion(line);
+    (portion.id && portion.grams ? matched : unmatched).push(portion);
+  }
+  const values = nutrientTargets.map((_, axis) => {
+    const foods = matched.filter(food => importFoodAvailability[food.id]?.includes(axis));
+    return foods.length ? foods.reduce((sum, food) => sum + foodNutrients[food.id][axis] * food.grams / 100, 0) / 7 : null;
+  });
+  const publisherFields = {0:'proteinContent',1:'fiberContent'};
+  const origins = values.map(value => value === null ? 'unavailable' : 'ingredient estimate');
+  for (const [axis, field] of Object.entries(publisherFields)) {
+    const value = meal.nutrition?.[field];
+    if (typeof value === 'number' && Number.isFinite(value) && value >= 0) {
+      values[axis] = value;
+      origins[axis] = 'publisher';
+    }
+  }
+  return {values, origins, matched, unmatched};
+}
+
+function importedNutritionView(meal) {
+  const profile = importedNutrition(meal);
+  const rows = nutrientTargets.map(([name], i) => {
+    const value = profile.values[i];
+    const unit = i < 2 ? 'g' : [7,8,10,15,16,18].includes(i) ? 'µg' : 'mg';
+    return `<li>${name} · ${value === null ? 'unavailable' :
+      (value > 0 && value < .1 ? '<0.1' : value.toFixed(1)) + ' ' + unit + ' · ' + profile.origins[i]}</li>`;
+  }).join('');
+  return `<details><summary>Nutrition per serving</summary>
+    <p>${profile.matched.length} of ${(meal.ingredients || []).length} ingredient entries matched.
+      Estimates divide the seven-serving recipe into seven equal portions and include matched food amounts.
+      Brands, preparation and edible weights affect the result.</p><ul>${rows.replaceAll('<0.1', '&lt;0.1')}</ul>
+    ${profile.unmatched.length ? `<details><summary>Ingredients excluded from estimates</summary><ul>
+      ${profile.unmatched.map(({line, reason}) => `<li>${esc(line)} · ${reason}</li>`).join('')}</ul></details>` : ''}
+    ${profile.matched.some(food => food.notes.length) ? `<details><summary>Portion assumptions</summary><ul>
+      ${profile.matched.filter(food => food.notes.length).map(food => `<li>${esc(food.line)} · ${food.notes.join('. ')}</li>`).join('')}</ul></details>` : ''}
+    </details>`;
+}
+
+function dinnerNutrients(meal) {
+  if (meal.imported) return importedNutrition(meal).values.map(value => value ?? 0);
   if (meal.portions) return estimateNutrients(meal.portions).map(amount => amount / 7);
   return estimateNutrients(meal.ingredients.flatMap(line => {
     const portion = Object.hasOwn(dinnerPortions, line) ? dinnerPortions[line] : null;
@@ -338,8 +473,8 @@ function coachView() {
     ...lunchSelection.map(i => [allLunches[i][0], estimateNutrients(lunchPortions[i])])]
     .map(([name, amounts, meal]) => `<details><summary>${esc(name)}</summary><ul>
       ${nutrientTargets.map(([label, target], i) =>
-        `<li>${label} · ${meal?.imported && !Object.hasOwn(meal.nutrition || {}, i === 0 ? 'proteinContent' : i === 1 ? 'fiberContent' : '') ?
-          'unscored' : Math.round(amounts[i] / target * 100) + '% daily reference per serving'}</li>`).join('')}
+        `<li>${label} · ${meal?.imported && importedNutrition(meal).values[i] === null ?
+          'unavailable' : Math.round(amounts[i] / target * 100) + '% daily reference per serving'}</li>`).join('')}
     </ul></details>`).join('');
   return `<div class="section-head"><div><h3>Nutrient coverage</h3><p>Estimated contribution from the meals in this plan</p></div></div>
     <div class="panel"><div class="stat" aria-live="polite"><strong>${esc(formatCoverage(score))} / 100</strong><span>Weekly planned-food score</span></div>
@@ -350,7 +485,7 @@ function coachView() {
     <div class="note">The score averages ${nutrientTargets.length} nutrient percentages, capping each at 100%. It uses seven days of FDA label Daily Values as a shared reference. Dinners count for seven, lunches assume an average of 3.5 servings across seven people, and selected additions count as planned. Estimates use USDA food matches and approximate portions. Missing food values are omitted from totals. Unmatched ingredients and unplanned meals are excluded. Individual needs and actual intake vary.</div>
     ${unmatched.length ? `<details><summary>${unmatched.length} ingredient entries excluded from the estimate</summary>
       <ul>${unmatched.map(line => `<li>${esc(line)}</li>`).join('')}</ul></details>` : ''}
-    ${meals.some(meal => meal.imported) ? '<p>Imported dinners add only verified publisher protein and fiber when available. Other nutrients for those dinners are omitted from the totals.</p>' : ''}
+    ${meals.some(meal => meal.imported) ? '<p>Imported dinners use publisher protein and fiber when available, plus estimates from matched ingredient quantities for the other tracked nutrients. Unavailable amounts are excluded. Open a recipe’s nutrition details to review its matches and assumptions.</p>' : ''}
     <details><summary>Estimates by meal</summary>${perMeal}</details></div>
     <div class="section-head"><div><h3>Nutrient Gap Coach</h3><p>Suggestions refresh after you add or dismiss one. The coach prioritizes the three lowest nutrients.</p></div></div>
     ${available.length ? '' : '<p>No more suggestions with an estimated gain for this plan. You can restore dismissed ideas or undo an addition.</p>'}
@@ -369,7 +504,7 @@ function coachView() {
 function recipeView(){return `${importPanel()}${libraryView()}${catalogView()}<div class="section-head"><div><h3>Recipe collection</h3><p>Complete dinner recipes scaled for seven</p></div></div><div class="panel">${meals.map((m,i)=>`<div class="lunch">${recipePhoto(m)}<div style="flex:1"><h4>${esc(m.name)}</h4><p>${esc(m.time)} · ${esc(m.cuisine)}</p></div><button class="btn light" onclick="openRecipe(${i})">Open</button></div>`).join('')}</div><div class="note">Cooking temperatures and times are included in the steps. Use a food thermometer for doneness; poultry 165°F, fish 145°F and whole cuts/ground meats according to safe handling guidance.</div>`}
 
 function render(){document.getElementById('weekLabel').textContent=weekLabel(weekStart);document.getElementById('main').innerHTML=current==='menu'?menuView():current==='coach'?coachView():current==='recipes'?recipeView():current==='history'?historyView():shopView();document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===current))}
-function openRecipe(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><span class="pill">${m.cuisine} · SERVES 7</span><h3 style="font:700 27px Georgia;margin:12px 0">${esc(m.name)}</h3><div class="recipe">${recipePhoto(m)}<div><b>Ingredients</b><ul>${m.ingredients.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>${m.imported ? sourceLink(m) + '<p>Review quantities and follow the source cooking directions.</p>' : `<h4>Method</h4><ol>${m.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`}<p style="font-size:12px;color:var(--muted)">${m.imported ? 'Imported recipe · partial nutrient data' : `${m.cost ? `Estimated cost: ${m.cost}. ` : ''}${m.tags.length ? `Nutrient tags: ${m.tags.join(' · ')}.` : ''}`}</p><button class="btn" onclick="markEaten(${i})">${eaten[i]?'✓ Confirmed eaten':'Mark as eaten'}</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
+function openRecipe(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><span class="pill">${m.cuisine} · SERVES 7</span><h3 style="font:700 27px Georgia;margin:12px 0">${esc(m.name)}</h3><div class="recipe">${recipePhoto(m)}<div><b>Ingredients</b><ul>${m.ingredients.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>${m.imported ? sourceLink(m) + importedNutritionView(m) + '<p>Review quantities and follow the source cooking directions.</p>' : `<h4>Method</h4><ol>${m.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`}<p style="font-size:12px;color:var(--muted)">${m.imported ? 'Imported recipe · partial nutrient data' : `${m.cost ? `Estimated cost: ${m.cost}. ` : ''}${m.tags.length ? `Nutrient tags: ${m.tags.join(' · ')}.` : ''}`}</p><button class="btn" onclick="markEaten(${i})">${eaten[i]?'✓ Confirmed eaten':'Mark as eaten'}</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
 function closeModal(){document.getElementById('modal').classList.add('hide')}
 function markEaten(i){eaten[i]=!eaten[i];showToast(eaten[i]?'Marked as eaten':'Eaten status removed');closeModal();render()}
 
@@ -1058,7 +1193,7 @@ function displayRecipeTime(value) {
 function showRecipeReview(draft = {}) {
   pendingRecipe = draft;
   const source = safeRecipeUrl(draft.url);
-  document.getElementById('recipeReview').innerHTML = `<form onsubmit="saveImportedRecipe(event)">
+  document.getElementById('recipeReview').innerHTML = `<form onsubmit="saveImportedRecipe(event)" oninput="previewImportedNutrition(this)">
     <h4>Review recipe</h4>
     ${recipePhoto({img: draft.image}, 'recipe-source-photo')}
     <label>Name <input name="name" value="${esc(draft.name || '')}" maxlength="150" required></label>
@@ -1068,8 +1203,10 @@ function showRecipeReview(draft = {}) {
     <label>Ingredients for the original servings, one per line
       <textarea name="ingredients" required maxlength="12000" rows="8" style="display:block;width:100%">${esc((draft.ingredients || []).join('\n'))}</textarea>
     </label><p>Measured quantities will be scaled to seven. Check ranges, package sizes, and unmeasured ingredients.</p>
+    <div id="importNutritionPreview"></div>
     <button class="btn" type="submit">Save to recipe library</button>
   </form>`;
+  previewImportedNutrition(document.getElementById('recipeReview').querySelector('form'));
 }
 
 const recipeFractions = {'¼':'1/4','½':'1/2','¾':'3/4','⅓':'1/3','⅔':'2/3',
@@ -1098,6 +1235,25 @@ function scaleIngredient(line, factor) {
   if (amounts.some(value => !Number.isFinite(value) || value <= 0 || value < 0.01)) return {line, needsReview: true};
   const formatted = amounts.map(value => Number(value.toFixed(2)).toString()).join('–');
   return {line: formatted + parsed.rest, needsReview: false};
+}
+
+function previewImportedNutrition(form) {
+  const servings = Number(form.elements.servings.value);
+  const preview = document.getElementById('importNutritionPreview');
+  if (!Number.isInteger(servings) || servings <= 0 || servings > 100) {
+    preview.innerHTML = '<p>Choose the original serving count to preview nutrition.</p>';
+    return;
+  }
+  const raw = form.elements.ingredients.value.split('\n').map(line => line.trim()).filter(Boolean);
+  const source = safeRecipeUrl(form.elements.source.value);
+  const unchanged = pendingRecipe && source === safeRecipeUrl(pendingRecipe.url) &&
+    servings === estimateServings(pendingRecipe.servings) &&
+    raw.join('\n') === pendingRecipe.ingredients?.join('\n');
+  const meal = {
+    ingredients: raw.map(line => scaleIngredient(line, 7 / servings).line),
+    nutrition: unchanged ? pendingRecipe.nutrition || {} : {},
+  };
+  preview.innerHTML = importedNutritionView(meal);
 }
 
 function saveImportedRecipe(event) {
@@ -1184,7 +1340,7 @@ function openSavedRecipe(id) {
     ${recipe.source ? `<p><button class="btn light" onclick="refreshRecipePhoto('${id}',this)">${recipe.img ? 'Refresh recipe photo' : 'Get recipe photo'}</button></p>` : ''}
     <p>Ingredients scaled to seven.</p>
     <ul>${recipe.ingredients.map(line => `<li>${esc(line)}${recipe.reviewIngredients.includes(line) ? ' <small>· check quantity</small>' : ''}</li>`).join('')}</ul>
-    ${sourceLink(recipe)}<p>Publisher nutrition is included where available. The other nutrients are unscored.</p>
+    ${sourceLink(recipe)}${importedNutritionView(recipe)}
     ${meals.some(meal => meal.id === id) ? '<p>This recipe is already in this week’s plan.</p>' : ''}
     ${suggestedSlot < 0 ? '<p>Choose a dinner below to replace.</p>' : '<p>The next dinner slot is selected below.</p>'}
     <form onsubmit="useSavedRecipe(event,'${id}')"><label>Dinner slot
