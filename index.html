@@ -9,7 +9,7 @@
 .grocery-row small{display:block;margin:3px 0 5px;color:var(--muted)}
 .grocery-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .grocery-actions select{max-width:100%;font:inherit;padding:5px;border:1px solid var(--line);border-radius:6px}
-@media print{.grocery-actions{display:none!important}}
+@media print{.grocery-actions,.grocery-removed{display:none!important}}
 .recipe-source-photo{display:block;width:100%;max-height:260px;object-fit:cover;border-radius:12px;margin:8px 0}
 img[hidden]{display:none!important}
 </style>
@@ -80,10 +80,6 @@ const lunchGroceries = [
   ['Sardines','Tomatoes','Leafy greens','Whole-wheat bread','Lime'],
   ['Cooked chicken (or leftovers)','Avocado','Whole-wheat bread','Radishes'],
 ];
-function groceryGroups() {
-  return [...meals.map(meal => [meal.name, ...meal.ingredients]),
-    ['QUICK LUNCHES', ...new Set(lunchSelection.flatMap(i => lunchGroceries[i]))]];
-}
 function showToast(s){let t=document.getElementById('toast');t.textContent=s;t.classList.remove('hide');setTimeout(()=>t.classList.add('hide'),2100)}
 function setView(v){current=v;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===v));render()}
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
@@ -531,7 +527,7 @@ function draftWeek(week, previousMeals, previousLunches) {
 }
 
 function storedPlan() {
-  return {weekStart, meals, lunchSelection, additions: additions.map(rec => rec.id), dismissedRecs, scheduledImports, groceryAssignments, checked, eaten, lunchDone};
+  return {weekStart, meals, lunchSelection, additions: additions.map(rec => rec.id), dismissedRecs, scheduledImports, groceryAssignments, removedGroceries, checked, eaten, lunchDone};
 }
 
 function persistState() {
@@ -561,6 +557,7 @@ function loadState() {
     scheduledImports = Array.isArray(saved.scheduledImports) ? saved.scheduledImports : [];
     groceryAssignments = Object.fromEntries(Object.entries(saved.groceryAssignments || {})
       .filter(([, store]) => Object.hasOwn(groceryStores, store)));
+    removedGroceries = Array.isArray(saved.removedGroceries) ? saved.removedGroceries : [];
     checked = saved.checked || {};
     eaten = saved.eaten || {};
     lunchDone = saved.lunchDone || {};
@@ -603,6 +600,7 @@ function startWeeklyPlan() {
   dismissedRecs = [];
   checked = {};
   groceryAssignments = {};
+  removedGroceries = [];
   eaten = {};
   lunchDone = {};
   weeklyDraft = null;
@@ -636,41 +634,133 @@ const groceryStores = {
   tomthumb: {name: 'Tom Thumb', url: 'https://www.tomthumb.com/'},
 };
 let groceryAssignments = {};
+let removedGroceries = [];
 
-function grocerySearchTerm(item) {
-  const amount = /^(?:about\s+|approximately\s+|~\s*)?(?:(?:\d+(?:[.,]\d+)?(?:\s+\d+\/\d+)?|\d*\s*[¼½¾⅓⅔⅛⅜⅝⅞])(?:\s*[-–]\s*\d+(?:\.\d+)?)?|\d+\/\d+)\s+/i;
-  return item.replace(amount, '')
-    .replace(/^(?:kg|g|mg|lb|lbs|pounds?|oz|ounces?|cups?|tablespoons?|teaspoons?|tbsp|tsp|cans?|bags?|heads?|bunch(?:es)?|slices?|large|medium|small)\s+(?:of\s+)?/i, '')
-    .trim() || item;
+const groceryUnits = {
+  kg:'kg', g:'g', mg:'mg', lb:'lb', lbs:'lb', pound:'lb', pounds:'lb',
+  oz:'oz', ounce:'oz', ounces:'oz', cup:'cup', cups:'cup',
+  tbsp:'tbsp', tablespoon:'tbsp', tablespoons:'tbsp', tsp:'tsp', teaspoon:'tsp', teaspoons:'tsp',
+  can:'can', cans:'can', bag:'bag', bags:'bag', head:'head', heads:'head',
+  bunch:'bunch', bunches:'bunch', slice:'slice', slices:'slice', clove:'clove', cloves:'clove',
+  bulb:'bulb', bulbs:'bulb', bottle:'bottle', bottles:'bottle',
+  large:'large', medium:'medium', small:'small',
+};
+const groceryAliases = {
+  carrot:'carrots', cucumber:'cucumbers', onion:'onions', 'red onion':'red onions',
+  tomato:'tomatoes', 'red bell pepper':'red bell peppers', pepper:'peppers',
+  avocado:'avocados', 'avocado flesh':'avocados', 'bell pepper':'bell peppers',
+  kiwi:'kiwis', 'kiwi flesh':'kiwis', banana:'bananas', orange:'oranges', lime:'limes',
+  lemon:'lemons', egg:'eggs', radish:'radishes', mushroom:'mushrooms',
+  'sweet potato':'sweet potatoes', 'broccoli florets':'broccoli',
+  'chicken breast':'chicken breasts', 'chicken thigh':'chicken thighs',
+  'corn tortilla':'corn tortillas', 'pumpkin seed':'pumpkin seeds',
+};
+
+function groceryIngredient(line) {
+  const trimmed = line.trim();
+  const body = trimmed.replace(/^(?:about\s+|approximately\s+|~\s*)/i, '');
+  const parsed = readIngredientQuantity(body);
+  let name = parsed ? parsed.rest.trim() : trimmed;
+  let unit = '';
+  let amounts = parsed?.amounts;
+  if (amounts) {
+    const word = name.split(/\s+/)[0].toLowerCase().replace(/\.$/, '');
+    if (Object.hasOwn(groceryUnits, word)) {
+      unit = groceryUnits[word];
+      name = name.replace(/^\S+\s+(?:of\s+)?/i, '');
+    }
+    if (!name || /^[(/]/.test(name)) {
+      // A multipack or unclear unit stays as written.
+      name = trimmed;
+      amounts = null;
+    }
+  }
+  name = name.replace(/,\s*(?:finely\s+)?(?:chopped|diced|sliced|minced|grated|peeled)\s*$/i, '').trim();
+  const normalized = name.toLowerCase().replace(/\s+/g, ' ');
+  name = Object.hasOwn(groceryAliases, normalized) ? groceryAliases[normalized] : name;
+  return {name, unit, amounts};
 }
 
-function defaultGroceryStore(item) {
-  const term = grocerySearchTerm(item);
+function defaultGroceryStore(term) {
   const freshProteins = /\b(?:salmon|trout|shrimp|mussels|chicken (?:breasts?|thighs?)|ground turkey|beef chuck)\b/i;
   return freshProteins.test(term) && !/\b(?:canned|frozen|leftover|cooked chicken)\b/i.test(term)
     ? 'tomthumb' : 'walmart';
 }
 
 function shoppingItems() {
-  const groups = [...groceryGroups().map(([name, ...items], i) => ({
-    id: 'meal-' + i, name, items,
-  })), ...additions.map(rec => ({id: 'coach-' + rec.id, name: rec.add, items: rec.shop}))];
-
-  return groups.flatMap(group => {
+  const groups = [
+    ...meals.map((meal, i) => ({id: 'meal-' + i, name: meal.name, items: meal.ingredients})),
+    ...lunchSelection.map(i => ({id: 'meal-5', name: allLunches[i][0], items: lunchGroceries[i]})),
+    ...additions.map(rec => ({id: 'coach-' + rec.id, name: rec.add, items: rec.shop})),
+  ];
+  const combined = new Map();
+  for (const group of groups) {
     const occurrences = new Map();
-    return group.items.map(item => {
-      const legacyKey = item.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const occurrence = (occurrences.get(item) || 0) + 1;
-      occurrences.set(item, occurrence);
-      const key = JSON.stringify([group.id, item, occurrence]);
-      const legacy = group.id.startsWith('coach-') ? group.id + '-' + legacyKey : legacyKey;
-      return {
-        key, name: item, meal: group.name,
-        store: groceryAssignments[key] || defaultGroceryStore(item),
-        done: checked[key] ?? Boolean(checked[legacy]),
-      };
-    });
+    for (const line of group.items) {
+      const {name, unit, amounts} = groceryIngredient(line);
+      const key = 'ingredient:' + name.toLowerCase().replace(/\s+/g, ' ');
+      const occurrence = (occurrences.get(line) || 0) + 1;
+      occurrences.set(line, occurrence);
+      const oldRow = JSON.stringify([group.id, line, occurrence]);
+      const oldName = line.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const legacyKey = group.id.startsWith('coach-') ? group.id + '-' + oldName : oldName;
+      if (!combined.has(key)) {
+        combined.set(key, {key, name, sources: new Set(), original: [], quantities: new Map(),
+          unspecified: false, previousStores: new Set(), previouslyDone: true});
+      }
+      const item = combined.get(key);
+      item.sources.add(group.name);
+      item.original.push(line);
+      if (amounts) {
+        const [min, max = min] = amounts;
+        const [lower, upper] = item.quantities.get(unit) || [0, 0];
+        item.quantities.set(unit, [lower + min, upper + max]);
+      } else {
+        item.unspecified = true;
+      }
+      if (groceryAssignments[oldRow]) item.previousStores.add(groceryAssignments[oldRow]);
+      item.previouslyDone &&= checked[oldRow] ?? Boolean(checked[legacyKey]);
+    }
+  }
+
+  return [...combined.values()].map(item => {
+    const quantity = [...item.quantities].map(([unit, [min, max]]) => {
+      const low = Number(min.toFixed(2)).toString();
+      const high = Number(max.toFixed(2)).toString();
+      const plural = /^(?:cup|can|bag|head|bunch|slice|clove|bulb|bottle)$/.test(unit) && (min !== 1 || max !== 1);
+      const displayUnit = plural ? unit + (unit === 'bunch' ? 'es' : 's') : unit;
+      return (low === high ? low : low + '–' + high) + (displayUnit ? ' ' + displayUnit : '');
+    }).join(' + ');
+    const quantityNote = item.unspecified && quantity ? ' · some amounts unspecified' : '';
+    return {
+      key: item.key, name: item.name, meal: [...item.sources].join(' · '),
+      label: item.original.length === 1 ? item.original[0] :
+        item.name + (quantity ? ' — ' + quantity + quantityNote : ''),
+      store: groceryAssignments[item.key] || (item.previousStores.size === 1
+        ? [...item.previousStores][0] : defaultGroceryStore(item.name)),
+      done: checked[item.key] ?? item.previouslyDone,
+      removed: removedGroceries.includes(item.key),
+    };
   });
+}
+
+function removeGrocery(index) {
+  const item = shoppingItems()[index];
+  if (!item || item.removed) return;
+  removedGroceries.push(item.key);
+  persistState();
+  render();
+  document.getElementById('removed-groceries')?.focus();
+  showToast('Removed from the shopping list.');
+}
+
+function restoreGrocery(index) {
+  const item = shoppingItems()[index];
+  if (!item?.removed) return;
+  removedGroceries = removedGroceries.filter(key => key !== item.key);
+  persistState();
+  render();
+  document.getElementById('grocery-check-' + index)?.focus();
 }
 
 function moveGrocery(index, store) {
@@ -694,7 +784,7 @@ function checkGrocery(index, done) {
 async function copyGrocerySearch(index) {
   const item = shoppingItems()[index];
   if (!item) return;
-  const term = grocerySearchTerm(item.name);
+  const term = item.name;
   try {
     await navigator.clipboard.writeText(term);
     showToast('Copied ' + term);
@@ -706,13 +796,13 @@ async function copyGrocerySearch(index) {
 function shopView() {
   const items = shoppingItems().map((item, index) => ({...item, index}));
   const sections = Object.entries(groceryStores).map(([key, store]) => {
-    const list = items.filter(item => item.store === key);
+    const list = items.filter(item => !item.removed && item.store === key);
     const checkedCount = list.filter(item => item.done).length;
-    const rows = list.map(({index, name, meal, done}) => {
-      const query = new URLSearchParams({q: grocerySearchTerm(name)});
+    const rows = list.map(({index, name, label, meal, done}) => {
+      const query = new URLSearchParams({q: name});
       return `<div class="grocery-row">
         <label class="shopitem ${done ? 'done' : ''}"><input id="grocery-check-${index}" type="checkbox"
-          ${done ? 'checked' : ''} onchange="checkGrocery(${index},this.checked)"><span>${esc(name)}</span></label>
+          ${done ? 'checked' : ''} onchange="checkGrocery(${index},this.checked)"><span>${esc(label)}</span></label>
         <small>${esc(meal)}</small>
         <div class="grocery-actions">
           <select id="grocery-store-${index}" aria-label="Store for ${esc(name)}" onchange="moveGrocery(${index},this.value)">
@@ -721,6 +811,7 @@ function shopView() {
           </select>
           <a class="link" href="https://www.walmart.com/search?${esc(query.toString())}" target="_blank" rel="noopener noreferrer">Search Walmart</a>
           <button class="link" onclick="copyGrocerySearch(${index})">Copy for Tom Thumb</button>
+          <button class="link" aria-label="Remove ${esc(name)} from shopping" onclick="removeGrocery(${index})">Remove</button>
         </div></div>`;
     }).join('');
     return `<section class="panel grocery-store"><div class="section-head"><div><h3>${store.name}</h3>
@@ -729,17 +820,22 @@ function shopView() {
         <button class="btn light" onclick="exportShopping('${key}')" ${list.length ? '' : 'disabled'}>Export list</button></div></div>
       ${rows || '<p>No items assigned to this store.</p>'}</section>`;
   }).join('');
+  const removed = items.filter(item => item.removed);
+  const removedSection = removed.length ? `<details class="panel grocery-removed">
+    <summary id="removed-groceries">Already have (${removed.length})</summary>
+    ${removed.map(({label, index}) => `<div class="shopitem"><span>${esc(label)}</span>
+      <button class="link" onclick="restoreGrocery(${index})">Restore</button></div>`).join('')}</details>` : '';
   return `<div class="section-head"><div><h3>Shopping lists</h3>
-    <p>Change the store on any item. For Tom Thumb, copy the item name and paste it into the store’s search.</p></div>
+    <p>Remove items you already have or change their store. For Tom Thumb, copy the item name and paste it into the store’s search.</p></div>
     <button class="btn light" onclick="window.print()">Print lists</button></div>
-    ${sections}<div class="note">These are Family Fuel checklists. Check prices and stock for your location on the retailer’s site.</div>`;
+    ${sections}${removedSection}<div class="note">These are Family Fuel checklists. Check prices and stock for your location on the retailer’s site.</div>`;
 }
 
 function shoppingText(storeKey) {
   const items = shoppingItems();
   return Object.entries(groceryStores).filter(([key]) => !storeKey || key === storeKey)
-    .map(([key, store]) => [store.name, ...items.filter(item => item.store === key)
-      .map(item => `${item.done ? '[x]' : '[ ]'} ${item.name} · ${item.meal}`)].join('\n')).join('\n\n');
+    .map(([key, store]) => [store.name, ...items.filter(item => !item.removed && item.store === key)
+      .map(item => `${item.done ? '[x]' : '[ ]'} ${item.label} · ${item.meal}`)].join('\n')).join('\n\n');
 }
 
 function exportShopping(storeKey) {
@@ -980,19 +1076,27 @@ const recipeFractions = {'¼':'1/4','½':'1/2','¾':'3/4','⅓':'1/3','⅔':'2/3
 const ingredientAmount = '(?:\\d+\\s+\\d+/\\d+|\\d+/\\d+|\\d+(?:[.,]\\d+)?|[.,]\\d+)';
 const ingredientQuantity = new RegExp('^(' + ingredientAmount + ')(?:\\s*[-–—]\\s*(' + ingredientAmount + '))?(?=\\s|$)');
 
-function scaleIngredient(line, factor) {
+function readIngredientQuantity(line) {
   const normalized = line.replace(/[¼½¾⅓⅔⅛⅜⅝⅞⅕⅖⅗⅘⅙⅚]/g, (symbol, i) =>
     (/\d/.test(line[i - 1] || '') ? ' ' : '') + recipeFractions[symbol]);
   const match = normalized.match(ingredientQuantity);
-  if (!match) return {line, needsReview: true};
+  if (!match) return null;
   const quantity = input => input.split(/\s+/).reduce((sum, part) => {
     const [top, bottom] = part.split('/');
     return sum + (bottom === undefined ? Number(top.replace(',', '.')) : Number(top) / Number(bottom));
-  }, 0) * factor;
+  }, 0);
   const amounts = match.slice(1).filter(Boolean).map(quantity);
+  if (amounts.some(value => !Number.isFinite(value) || value <= 0)) return null;
+  return {amounts, rest: normalized.slice(match[0].length)};
+}
+
+function scaleIngredient(line, factor) {
+  const parsed = readIngredientQuantity(line);
+  if (!parsed) return {line, needsReview: true};
+  const amounts = parsed.amounts.map(value => value * factor);
   if (amounts.some(value => !Number.isFinite(value) || value <= 0 || value < 0.01)) return {line, needsReview: true};
   const formatted = amounts.map(value => Number(value.toFixed(2)).toString()).join('–');
-  return {line: formatted + normalized.slice(match[0].length), needsReview: false};
+  return {line: formatted + parsed.rest, needsReview: false};
 }
 
 function saveImportedRecipe(event) {
