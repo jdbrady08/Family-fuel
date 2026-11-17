@@ -249,6 +249,7 @@ function dinnerNutrients(meal) {
       name === 'Fiber' ? meal.nutrition?.fiberContent || 0 : 0
     );
   }
+  if (meal.portions) return estimateNutrients(meal.portions).map(amount => amount / 7);
   return estimateNutrients(meal.ingredients.flatMap(line => {
     const portion = Object.hasOwn(dinnerPortions, line) ? dinnerPortions[line] : null;
     return portion ? [portion] : [];
@@ -326,7 +327,7 @@ function coachView() {
   const rows = gaps.map(({name, value}) => `<div class="nutrient">
     <span>${name}</span><div class="bar"><div class="fill" style="width:${value}%"></div></div>
     <strong>${esc(formatCoverage(value))}%</strong></div>`).join('');
-  const unmatched = [...new Set(meals.filter(meal => !meal.imported).flatMap(meal =>
+  const unmatched = [...new Set(meals.filter(meal => !meal.imported && !meal.portions).flatMap(meal =>
     meal.ingredients.filter(line => !Object.hasOwn(dinnerPortions, line))))];
   const perMeal = [...meals.map(meal => [meal.name, dinnerNutrients(meal), meal]),
     ...lunchSelection.map(i => [allLunches[i][0], estimateNutrients(lunchPortions[i])])]
@@ -360,10 +361,10 @@ function coachView() {
     <button class="link" onclick="removeRec('${rec.id}')">Undo</button></div>`).join('')}</div>` : ''}`;
 }
 
-function recipeView(){return `${importPanel()}${libraryView()}<div class="section-head"><div><h3>Recipe collection</h3><p>Complete dinner recipes scaled for seven</p></div></div><div class="panel">${meals.map((m,i)=>`<div class="lunch">${m.img ? `<img src="${m.img}" alt="">` : ''}<div style="flex:1"><h4>${esc(m.name)}</h4><p>${esc(m.time)} · ${esc(m.cuisine)}</p></div><button class="btn light" onclick="openRecipe(${i})">Open</button></div>`).join('')}</div><div class="note">Cooking temperatures and times are included in the steps. Use a food thermometer for doneness; poultry 165°F, fish 145°F and whole cuts/ground meats according to safe handling guidance.</div>`}
+function recipeView(){return `${importPanel()}${libraryView()}${catalogView()}<div class="section-head"><div><h3>Recipe collection</h3><p>Complete dinner recipes scaled for seven</p></div></div><div class="panel">${meals.map((m,i)=>`<div class="lunch">${m.img ? `<img src="${m.img}" alt="">` : ''}<div style="flex:1"><h4>${esc(m.name)}</h4><p>${esc(m.time)} · ${esc(m.cuisine)}</p></div><button class="btn light" onclick="openRecipe(${i})">Open</button></div>`).join('')}</div><div class="note">Cooking temperatures and times are included in the steps. Use a food thermometer for doneness; poultry 165°F, fish 145°F and whole cuts/ground meats according to safe handling guidance.</div>`}
 
 function render(){document.getElementById('weekLabel').textContent=weekLabel(weekStart);document.getElementById('main').innerHTML=current==='menu'?menuView():current==='coach'?coachView():current==='recipes'?recipeView():current==='history'?historyView():shopView();document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===current))}
-function openRecipe(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><span class="pill">${m.cuisine} · SERVES 7</span><h3 style="font:700 27px Georgia;margin:12px 0">${esc(m.name)}</h3><div class="recipe">${m.img ? `<img src="${m.img}" alt="">` : ''}<div><b>Ingredients</b><ul>${m.ingredients.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>${m.imported ? sourceLink(m) + '<p>Review quantities and follow the source cooking directions.</p>' : `<h4>Method</h4><ol>${m.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`}<p style="font-size:12px;color:var(--muted)">${m.imported ? 'Imported recipe · partial nutrient data' : `Estimated cost: ${m.cost}. Nutrient tags: ${m.tags.join(' · ')}.`}</p><button class="btn" onclick="markEaten(${i})">${eaten[i]?'✓ Confirmed eaten':'Mark as eaten'}</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
+function openRecipe(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><span class="pill">${m.cuisine} · SERVES 7</span><h3 style="font:700 27px Georgia;margin:12px 0">${esc(m.name)}</h3><div class="recipe">${m.img ? `<img src="${m.img}" alt="">` : ''}<div><b>Ingredients</b><ul>${m.ingredients.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>${m.imported ? sourceLink(m) + '<p>Review quantities and follow the source cooking directions.</p>' : `<h4>Method</h4><ol>${m.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`}<p style="font-size:12px;color:var(--muted)">${m.imported ? 'Imported recipe · partial nutrient data' : `${m.cost ? `Estimated cost: ${m.cost}. ` : ''}${m.tags.length ? `Nutrient tags: ${m.tags.join(' · ')}.` : ''}`}</p><button class="btn" onclick="markEaten(${i})">${eaten[i]?'✓ Confirmed eaten':'Mark as eaten'}</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
 function closeModal(){document.getElementById('modal').classList.add('hide')}
 function markEaten(i){eaten[i]=!eaten[i];showToast(eaten[i]?'Marked as eaten':'Eaten status removed');closeModal();render()}
 function toggleShop(id){checked[id]=!checked[id];render()}
@@ -376,12 +377,63 @@ const mealAlternates=[
  {name:'Coconut chickpea & spinach curry',cuisine:'SOUTH ASIAN-INSPIRED',time:'35 min',desc:'Chickpeas and spinach in a fragrant tomato-coconut curry over brown rice.',tags:['Fiber','Folate','Magnesium'],cost:'$1.95 / serving',ingredients:['4 cans chickpeas','2 cans light coconut milk','1 large onion','2 bags spinach','28 oz crushed tomatoes','4 cups dry rice','curry spices, ginger, garlic'],steps:['Cook rice.','Soften onion, ginger and garlic; add curry spices.','Stir in tomatoes, coconut milk and chickpeas; simmer 20 minutes.','Fold in spinach until wilted.','Serve over rice with yogurt and lime if desired.']}
 ];
 const starterWeek = '2026-11-16';
+const extraDinners = [
+  {"name": "Lime salmon and broccoli rice bowls", "cuisine": "Mediterranean", "time": "35 min", "desc": "Cook the brown rice and serve the salmon and broccoli over it with extra lime.", "ingredients": ["1050 g salmon", "600 g broccoli florets", "350 g dry brown rice", "60 g lime juice", "Olive oil to taste"], "steps": ["Roast salmon and broccoli with lime and olive oil.", "Cook the brown rice and serve the salmon and broccoli over it with extra lime."], "portions": [[175167, 1050], [169967, 600], [169703, 350], [168155, 60]], "tags": [], "img": ""},
+  {"name": "Smoky turkey and white bean skillet", "cuisine": "American", "time": "30 min", "desc": "Stir in tomatoes and beans and simmer until thickened and the turkey is cooked through.", "ingredients": ["1000 g ground turkey", "150 g onion", "800 g drained white beans", "794 g crushed tomatoes", "Smoked paprika to taste"], "steps": ["Brown the turkey with onion and smoked paprika.", "Stir in tomatoes and beans and simmer until thickened and the turkey is cooked through."], "portions": [[172850, 1000], [170000, 150], [175204, 800], [170501, 794]], "tags": [], "img": ""},
+  {"name": "Ginger chicken and cabbage bowls", "cuisine": "East Asian-inspired", "time": "35 min", "desc": "Serve over rice.", "ingredients": ["1050 g boneless chicken thighs", "600 g red cabbage", "350 g carrots", "350 g dry brown rice", "Ginger to taste"], "steps": ["Cook the brown rice.", "Stir-fry sliced chicken with minced ginger, then add shredded cabbage and carrots and cook until tender-crisp.", "Serve over rice."], "portions": [[173627, 1050], [169977, 600], [170393, 350], [169703, 350]], "tags": [], "img": ""},
+  {"name": "Sunflower-crusted trout and sweet potatoes", "cuisine": "American", "time": "40 min", "desc": "Serve with warm broccoli.", "ingredients": ["850 g trout fillets", "1000 g sweet potatoes", "100 g sunflower kernels", "550 g broccoli"], "steps": ["Cut sweet potatoes into wedges and roast until tender.", "Press crushed sunflower kernels onto trout and bake until cooked.", "Serve with warm broccoli."], "portions": [[173718, 850], [168483, 1000], [170562, 100], [169967, 550]], "tags": [], "img": ""},
+  {"name": "Chickpea and cauliflower tacos", "cuisine": "Mexican-inspired", "time": "30 min", "desc": "Warm the tortillas and fill them with roasted vegetables, mashed avocado and lime.", "ingredients": ["850 g drained chickpeas", "850 g cauliflower", "500 g corn tortillas", "300 g avocado flesh", "60 g lime juice", "Paprika to taste", "Cumin to taste"], "steps": ["Roast cauliflower and chickpeas with cumin and paprika.", "Warm the tortillas and fill them with roasted vegetables, mashed avocado and lime."], "portions": [[173800, 850], [169986, 850], [175036, 500], [171705, 300], [168155, 60]], "tags": [], "img": ""},
+  {"name": "Sesame shrimp and broccoli bulgur", "cuisine": "East Asian-inspired", "time": "30 min", "desc": "Serve over bulgur.", "ingredients": ["1000 g peeled shrimp", "700 g broccoli", "350 g dry bulgur", "Ginger to taste", "Sesame oil to taste"], "steps": ["Cook bulgur.", "Sauté peeled shrimp and broccoli in a hot skillet with sesame oil and ginger.", "Serve over bulgur."], "portions": [[175179, 1000], [169967, 700], [170688, 350]], "tags": [], "img": ""},
+  {"name": "Beef, kale and lentil stew", "cuisine": "Mediterranean", "time": "100 min", "desc": "Stir in cooked lentils and kale until hot and tender.", "ingredients": ["900 g beef chuck", "350 g kale", "700 g cooked lentils", "794 g crushed tomatoes", "150 g onion"], "steps": ["Brown cubed beef and chopped onion.", "Add crushed tomatoes and enough water to cover, then simmer until the beef is tender.", "Stir in cooked lentils and kale until hot and tender."], "portions": [[168660, 900], [168421, 350], [172421, 700], [170501, 794], [170000, 150]], "tags": [], "img": ""},
+  {"name": "Baked sardine and tomato pasta", "cuisine": "Italian-inspired", "time": "35 min", "desc": "Top with Parmesan and bake until bubbling.", "ingredients": ["550 g drained sardines with bones", "500 g dry whole-wheat pasta", "794 g crushed tomatoes", "90 g Parmesan"], "steps": ["Cook whole-wheat pasta just short of tender.", "Toss with crushed tomatoes and drained sardines.", "Top with Parmesan and bake until bubbling."], "portions": [[175139, 550], [169738, 500], [170501, 794], [170848, 90]], "tags": [], "img": ""},
+  {"name": "Stuffed peppers with turkey and bulgur", "cuisine": "Mediterranean", "time": "45 min", "desc": "Fill halved peppers and bake until tender and hot throughout.", "ingredients": ["1100 g red bell peppers", "850 g ground turkey", "280 g dry bulgur", "500 g crushed tomatoes", "150 g onion"], "steps": ["Cook bulgur and brown the turkey with onion.", "Mix with crushed tomatoes.", "Fill halved peppers and bake until tender and hot throughout."], "portions": [[170108, 1100], [172850, 850], [170688, 280], [170501, 500], [170000, 150]], "tags": [], "img": ""},
+  {"name": "Roasted carrot and white bean bowls", "cuisine": "Mediterranean", "time": "40 min", "desc": "Serve with bulgur and a spoonful of yogurt.", "ingredients": ["850 g carrots", "850 g drained white beans", "250 g spinach", "300 g dry bulgur", "245 g plain Greek yogurt", "50 g lime juice", "Garlic to taste"], "steps": ["Roast sliced carrots until caramelized.", "Warm the white beans with spinach, garlic and lime.", "Serve with bulgur and a spoonful of yogurt."], "portions": [[170393, 850], [175204, 850], [168462, 250], [170688, 300], [170903, 245], [168155, 50]], "tags": [], "img": ""},
+  {"name": "Orange chicken and edamame rice", "cuisine": "East Asian-inspired", "time": "35 min", "desc": "Add orange juice and zest and simmer until the chicken is cooked, then fold in edamame.", "ingredients": ["1050 g boneless chicken thighs", "500 g shelled edamame", "350 g dry brown rice", "300 g oranges"], "steps": ["Cook brown rice and steam edamame.", "Brown sliced chicken in batches.", "Add orange juice and zest and simmer until the chicken is cooked, then fold in edamame."], "portions": [[173627, 1050], [168411, 500], [169703, 350], [169097, 300]], "tags": [], "img": ""},
+  {"name": "Lentil and sweet potato shepherd’s pie", "cuisine": "British-inspired", "time": "50 min", "desc": "Spread the mash over the filling and bake until bubbling.", "ingredients": ["1000 g cooked lentils", "1200 g sweet potatoes", "400 g carrots", "160 g onion", "500 g crushed tomatoes"], "steps": ["Cook and mash the sweet potatoes.", "Simmer lentils, carrots and onion in crushed tomato.", "Spread the mash over the filling and bake until bubbling."], "portions": [[172421, 1000], [168483, 1200], [170393, 400], [170000, 160], [170501, 500]], "tags": [], "img": ""},
+  {"name": "Salmon tacos with crunchy slaw", "cuisine": "Mexican-inspired", "time": "30 min", "desc": "Warm the tortillas and fill with salmon, slaw and avocado.", "ingredients": ["1000 g salmon", "500 g red cabbage", "240 g plain Greek yogurt", "60 g lime juice", "500 g corn tortillas", "300 g avocado flesh"], "steps": ["Roast seasoned salmon and flake it.", "Toss shredded cabbage with yogurt and lime.", "Warm the tortillas and fill with salmon, slaw and avocado."], "portions": [[175167, 1000], [169977, 500], [170903, 240], [168155, 60], [175036, 500], [171705, 300]], "tags": [], "img": ""},
+  {"name": "Turkey, spinach and mushroom pasta", "cuisine": "Italian-inspired", "time": "30 min", "desc": "Add tomatoes and simmer, then wilt in spinach and toss with the pasta.", "ingredients": ["900 g ground turkey", "500 g mushrooms", "300 g spinach", "794 g crushed tomatoes", "450 g dry whole-wheat pasta"], "steps": ["Cook the pasta.", "Brown turkey with mushrooms.", "Add tomatoes and simmer, then wilt in spinach and toss with the pasta."], "portions": [[172850, 900], [169251, 500], [168462, 300], [170501, 794], [169738, 450]], "tags": [], "img": ""},
+  {"name": "Paprika chicken with cauliflower and white beans", "cuisine": "Spanish-inspired", "time": "45 min", "desc": "Serve together.", "ingredients": ["1100 g boneless chicken thighs", "900 g cauliflower", "650 g drained white beans", "450 g crushed tomatoes", "Paprika to taste", "Garlic to taste"], "steps": ["Roast paprika-seasoned chicken and cauliflower on a sheet pan.", "Warm white beans with tomatoes and garlic.", "Serve together."], "portions": [[173627, 1100], [169986, 900], [175204, 650], [170501, 450]], "tags": [], "img": ""},
+  {"name": "Tomato mussels and whole-wheat toast", "cuisine": "Mediterranean", "time": "30 min", "desc": "Serve with toast and spinach.", "ingredients": ["600 g cooked mussel meat equivalent (buy shell-on as needed)", "794 g crushed tomatoes", "150 g onion", "300 g spinach", "420 g whole-wheat bread", "Garlic to taste"], "steps": ["Simmer crushed tomatoes with onion and garlic.", "Steam the mussels in the sauce until their shells open and discard any unopened ones.", "Serve with toast and spinach."], "portions": [[174217, 600], [170501, 794], [170000, 150], [168462, 300], [172688, 420]], "tags": [], "img": ""},
+  {"name": "Broccoli and mushroom egg bake", "cuisine": "American", "time": "40 min", "desc": "Serve with whole-wheat toast.", "ingredients": ["700 g eggs without shells", "550 g broccoli", "350 g mushrooms", "110 g Parmesan", "420 g whole-wheat bread"], "steps": ["Sauté mushrooms and broccoli to remove excess moisture.", "Whisk eggs, fold in the vegetables and Parmesan, and bake until set.", "Serve with whole-wheat toast."], "portions": [[171287, 700], [169967, 550], [169251, 350], [170848, 110], [172688, 420]], "tags": [], "img": ""},
+  {"name": "Lime shrimp and white bean skillet", "cuisine": "Mediterranean", "time": "25 min", "desc": "Finish with lime and serve with toast.", "ingredients": ["900 g peeled shrimp", "850 g drained white beans", "300 g spinach", "60 g lime juice", "420 g whole-wheat bread", "Garlic to taste"], "steps": ["Sauté shrimp and garlic until the shrimp are cooked.", "Stir in white beans and spinach until hot.", "Finish with lime and serve with toast."], "portions": [[175179, 900], [175204, 850], [168462, 300], [168155, 60], [172688, 420]], "tags": [], "img": ""},
+  {"name": "Cumin beef and sweet potato tostadas", "cuisine": "Mexican-inspired", "time": "40 min", "desc": "Crisp the tortillas and top with beef, sweet potato and avocado.", "ingredients": ["950 g beef chuck (cut into small pieces)", "950 g sweet potatoes", "400 g red bell peppers", "500 g corn tortillas", "300 g avocado flesh", "Cumin to taste"], "steps": ["Roast diced sweet potatoes.", "Brown diced beef with cumin and chopped peppers until cooked and tender.", "Crisp the tortillas and top with beef, sweet potato and avocado."], "portions": [[168660, 950], [168483, 950], [170108, 400], [175036, 500], [171705, 300]], "tags": [], "img": ""},
+  {"name": "Trout with warm lentils and kale", "cuisine": "French-inspired", "time": "30 min", "desc": "Plate the trout over the lentils.", "ingredients": ["850 g trout fillets", "900 g cooked lentils", "350 g carrots", "300 g kale", "60 g lime juice"], "steps": ["Bake trout with lime.", "Warm cooked lentils with sliced carrots and shredded kale until the vegetables are tender.", "Plate the trout over the lentils."], "portions": [[173718, 850], [172421, 900], [170393, 350], [168421, 300], [168155, 60]], "tags": [], "img": ""},
+];
+const extraLunches = [
+  {"card": ["Smoky white bean toast", "Mash white beans with lime and smoked paprika, then spread on toast and top with tomato.", "8 min", ""], "portions": [[175204, 90], [172688, 56], [170457, 75], [168155, 10]], "groceries": ["360 g drained white beans", "224 g whole-wheat bread", "300 g tomatoes", "40 g lime juice"]},
+  {"card": ["Pepper and hummus crunch wraps", "Spread hummus on pita and fold around raw pepper, shredded carrot and greens.", "8 min", ""], "portions": [[174289, 65], [174916, 60], [170108, 55], [170393, 35], [169249, 25]], "groceries": ["260 g hummus", "240 g whole-wheat pita", "220 g red bell peppers", "140 g carrots", "100 g leafy lettuce"]},
+  {"card": ["Blueberry and almond yogurt cups", "Layer yogurt, blueberries and sliced almonds in cups.", "5 min", ""], "portions": [[170903, 175], [171711, 80], [170567, 20]], "groceries": ["700 g plain Greek yogurt", "320 g blueberries", "80 g almonds"]},
+  {"card": ["Smashed chickpea sandwiches", "Mash drained chickpeas and yogurt, then spoon onto whole-wheat bread with cucumber.", "10 min", ""], "portions": [[173800, 95], [170903, 35], [172688, 56], [168409, 60]], "groceries": ["380 g drained chickpeas", "140 g plain Greek yogurt", "224 g whole-wheat bread", "240 g cucumber"]},
+  {"card": ["Orange and sunflower overnight oats", "Stir oats into fortified milk and chill overnight. Add orange segments and sunflower kernels at lunch.", "5 min prep", ""], "portions": [[169705, 40], [171267, 180], [169097, 100], [170562, 15]], "groceries": ["160 g oats", "720 g fortified milk", "400 g oranges", "60 g sunflower kernels"]},
+  {"card": ["Chicken and red cabbage pita", "Fill pita with cooked chicken and shredded cabbage, then drizzle with lime yogurt.", "10 min", ""], "portions": [[173627, 105], [169977, 50], [174916, 60], [170903, 40], [168155, 10]], "groceries": ["420 g cooked chicken (use leftovers)", "200 g red cabbage", "240 g whole-wheat pita", "160 g plain Greek yogurt", "40 g lime juice"]},
+  {"card": ["Lentil and cucumber cups", "Toss cooked lentils with diced cucumber, tomatoes and lime.", "8 min", ""], "portions": [[172421, 125], [168409, 70], [170457, 75], [168155, 15]], "groceries": ["500 g cooked lentils", "280 g cucumber", "300 g tomatoes", "60 g lime juice"]},
+  {"card": ["Sardine and radish tortilla crisps", "Top crisp toasted tortilla wedges with sardines, sliced radishes and mashed avocado.", "10 min", ""], "portions": [[175139, 65], [175036, 48], [169276, 35], [171705, 50]], "groceries": ["260 g drained sardines with bones", "192 g corn tortillas", "140 g radishes", "200 g avocado flesh"]},
+  {"card": ["Sweet potato and yogurt bowls", "Reheat a baked sweet potato and top with Greek yogurt and pumpkin seeds.", "6 min", ""], "portions": [[168483, 150], [170903, 110], [170556, 15]], "groceries": ["600 g baked sweet potatoes", "440 g plain Greek yogurt", "60 g pumpkin seeds"]},
+  {"card": ["Banana and walnut yogurt", "Slice banana into plain yogurt and top with chopped walnuts and oats.", "5 min", ""], "portions": [[173944, 100], [170903, 170], [170187, 15], [169705, 25]], "groceries": ["400 g bananas", "680 g plain Greek yogurt", "60 g walnuts", "100 g oats"]},
+  {"card": ["Chicken and avocado pita pockets", "Shred cooked chicken and tuck into pita with avocado, greens and lime.", "8 min", ""], "portions": [[173627, 100], [171705, 55], [174916, 60], [169249, 25], [168155, 10]], "groceries": ["400 g cooked chicken (use leftovers)", "220 g avocado flesh", "240 g whole-wheat pita", "100 g leafy lettuce", "40 g lime juice"]},
+  {"card": ["Tomato, egg and spinach toast", "Layer slices of hard-boiled egg, tomato and spinach over whole-wheat toast.", "7 min", ""], "portions": [[173424, 100], [170457, 75], [168462, 30], [172688, 56]], "groceries": ["400 g hard-boiled eggs", "300 g tomatoes", "120 g spinach", "224 g whole-wheat bread"]},
+  {"card": ["Edamame rice cups", "Mix cooked brown rice and shelled edamame with shredded carrots and lime. Use chilled leftovers for quick assembly.", "8 min", ""], "portions": [[169703, 40], [168411, 100], [170393, 45], [168155, 15]], "groceries": ["160 g dry brown rice equivalent", "400 g shelled edamame", "180 g carrots", "60 g lime juice"]},
+  {"card": ["Broccoli and white bean pita", "Toss chopped cooked broccoli and beans with yogurt and stuff into pita.", "9 min", ""], "portions": [[169967, 80], [175204, 90], [170903, 35], [174916, 60]], "groceries": ["320 g cooked broccoli", "360 g drained white beans", "140 g plain Greek yogurt", "240 g whole-wheat pita"]},
+  {"card": ["Almond and kiwi oat bowl", "Stir oats into yogurt and top with kiwi and sliced almonds.", "5 min", ""], "portions": [[169705, 35], [170903, 165], [168153, 75], [170567, 20]], "groceries": ["140 g oats", "660 g plain Greek yogurt", "300 g kiwi flesh", "80 g almonds"]},
+  {"card": ["Spinach and egg tacos", "Warm tortillas, then fill with chopped hard-boiled eggs, spinach and diced peppers.", "8 min", ""], "portions": [[175036, 48], [173424, 100], [168462, 35], [170108, 65]], "groceries": ["192 g corn tortillas", "400 g hard-boiled eggs", "140 g spinach", "260 g red bell peppers"]},
+  {"card": ["Bulgur and chickpea lunch salad", "Mix cooked bulgur with chickpeas, cucumber, tomatoes and a squeeze of lime.", "8 min", ""], "portions": [[170287, 100], [173800, 100], [168409, 60], [170457, 70], [168155, 10]], "groceries": ["400 g cooked bulgur", "400 g drained chickpeas", "240 g cucumber", "280 g tomatoes", "40 g lime juice"]},
+  {"card": ["Yogurt, carrot and lentil snack plate", "Serve cooked lentils with yogurt for dipping, carrot sticks and warm pita.", "8 min", ""], "portions": [[172421, 105], [170903, 70], [170393, 65], [174916, 60]], "groceries": ["420 g cooked lentils", "280 g plain Greek yogurt", "260 g carrots", "240 g whole-wheat pita"]},
+  {"card": ["Open-face trout and cucumber sandwiches", "Flake leftover cooked trout over whole-wheat toast with cucumber slices and lime yogurt.", "8 min", ""], "portions": [[173718, 90], [168409, 55], [172688, 56], [170903, 35], [168155, 10]], "groceries": ["360 g cooked trout (use leftovers)", "220 g cucumber", "224 g whole-wheat bread", "140 g plain Greek yogurt", "40 g lime juice"]},
+  {"card": ["Carrot and sunflower slaw pita", "Toss shredded carrot and red cabbage with Greek yogurt and sunflower kernels, then spoon into pita.", "8 min", ""], "portions": [[170393, 65], [169977, 60], [170903, 65], [170562, 20], [174916, 60]], "groceries": ["260 g carrots", "240 g red cabbage", "260 g plain Greek yogurt", "80 g sunflower kernels", "240 g whole-wheat pita"]},
+];
+for (const lunch of extraLunches) {
+  allLunches.push(lunch.card);
+  lunchPortions.push(lunch.portions);
+  lunchGroceries.push(lunch.groceries);
+}
+
 const dinnerCatalog = [...meals.map(meal => ({...meal})),
-  ...mealAlternates.map(meal => ({...meal, img: ''}))];
+  ...mealAlternates.map(meal => ({...meal, img: ''})), ...extraDinners];
 const weekdays = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
 const shortDate = new Intl.DateTimeFormat('en-US', {month: 'short', day: 'numeric'});
 const fullDate = new Intl.DateTimeFormat('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
 let weekStart = starterWeek;
+let scheduledImports = [];
 let weeklyDraft = null;
 let lunchDone = {};
 
@@ -427,34 +479,51 @@ function draftWeek(week, previousMeals, previousLunches) {
   }
 
   const previous = new Set(previousMeals.map(meal => meal.name));
-  const newRecipes = dinnerCatalog.filter(recipe => !previous.has(recipe.name)).length;
-  const minimumNew = Math.min(2, newRecipes);
-  const lunchTotals = lunchSelection.map(i => estimateNutrients(lunchPortions[i]));
-  const dinnerTotals = dinnerCatalog.map(dinnerNutrients);
+  const queued = queuedImports().slice(0, 5);
+  const queuedNames = new Set(queued.map(recipe => recipe.name));
+  const candidates = dinnerCatalog.filter(recipe => !queuedNames.has(recipe.name))
+    .map(recipe => ({recipe, nutrients: dinnerNutrients(recipe), fresh: !previous.has(recipe.name)}));
   const comparable = [...weekHistory, snapshotWeek()].filter(record => !record.importedWithUnknowns);
   const priorities = recurringGaps(comparable);
-  let best = null;
-  for (let mask = 0; mask < 2 ** dinnerCatalog.length; mask++) {
-    const choices = dinnerCatalog.map((_, i) => i).filter(i => mask & (1 << i));
-    if (choices.length !== 5 || choices.filter(i => !previous.has(dinnerCatalog[i].name)).length < minimumNew) continue;
-    const totals = nutrientTargets.map((_, axis) =>
-      choices.reduce((sum, i) => sum + dinnerTotals[i][axis], 0) +
-      lunchTotals.reduce((sum, amounts) => sum + amounts[axis] / 2, 0)
-    );
-    const coverage = weeklyCoverage(totals);
-    const score = coverageScore(coverage);
-    const priorityBonus = priorities.reduce((sum, {i}) => sum + coverage[i], 0) / 8;
-    const ranking = score + priorityBonus;
-    if (!best || ranking > best.ranking) best = {choices, score, ranking};
+  const selected = [...queued];
+  const lunchTotals = lunchSelection.map(i => estimateNutrients(lunchPortions[i]));
+  const importTotals = queued.map(dinnerNutrients);
+  const totals = nutrientTargets.map((_, axis) =>
+    lunchTotals.reduce((sum, amounts) => sum + amounts[axis] / 2, 0) +
+    importTotals.reduce((sum, amounts) => sum + amounts[axis], 0)
+  );
+  const ranking = values => {
+    const coverage = weeklyCoverage(values);
+    return coverageScore(coverage) + priorities.reduce((sum, {i}) => sum + coverage[i], 0) / 8;
+  };
+
+  // Fill the remaining slots without enumerating every possible menu in the larger catalog.
+  const freshNeeded = Math.max(0, 2 - queued.filter(recipe => !previous.has(recipe.name)).length);
+  for (let slot = queued.length; slot < 5; slot++) {
+    const preferFresh = slot - queued.length < freshNeeded && candidates.some(candidate => candidate.fresh);
+    let bestIndex = -1;
+    let bestRank = -Infinity;
+    candidates.forEach((candidate, i) => {
+      if (preferFresh && !candidate.fresh) return;
+      const rank = ranking(totals.map((sum, axis) => sum + candidate.nutrients[axis]));
+      if (rank > bestRank) {
+        bestIndex = i;
+        bestRank = rank;
+      }
+    });
+    const [best] = candidates.splice(bestIndex, 1);
+    selected.push(best.recipe);
+    best.nutrients.forEach((amount, axis) => { totals[axis] += amount; });
   }
   return {
-    week, lunchSelection, score: best.score, priorities,
-    meals: scheduleDinners(best.choices.map(i => dinnerCatalog[i]), week),
+    week, lunchSelection, score: coverageScore(weeklyCoverage(totals)), priorities,
+    meals: scheduleDinners(selected, week),
+    importKeys: queued.map(recipe => recipe.queueKey),
   };
 }
 
 function storedPlan() {
-  return {weekStart, meals, lunchSelection, additions: additions.map(rec => rec.id), dismissedRecs, checked, eaten, lunchDone};
+  return {weekStart, meals, lunchSelection, additions: additions.map(rec => rec.id), dismissedRecs, scheduledImports, checked, eaten, lunchDone};
 }
 
 function persistState() {
@@ -481,6 +550,7 @@ function loadState() {
     additions = (saved.additions || []).map(id => recs.find(rec => rec.id === id)).filter(Boolean);
     dismissedRecs = Array.isArray(saved.dismissedRecs)
       ? [...new Set(saved.dismissedRecs)].filter(id => recs.some(rec => rec.id === id)) : [];
+    scheduledImports = Array.isArray(saved.scheduledImports) ? saved.scheduledImports : [];
     checked = saved.checked || {};
     eaten = saved.eaten || {};
     lunchDone = saved.lunchDone || {};
@@ -503,6 +573,7 @@ function weeklyDraftView() {
     <h3>New plan for ${weekLabel(weeklyDraft.week)}</h3>
     <p>Five dinners and four quick lunches · projected score <strong>${esc(formatCoverage(weeklyDraft.score))} / 100</strong></p>
     ${weeklyDraft.priorities.length ? `<p>Prioritized from recent weeks · ${weeklyDraft.priorities.map(({i}) => nutrientTargets[i][0]).join(', ')}</p>` : ''}
+    ${weeklyDraft.importKeys.length ? `<p>${weeklyDraft.importKeys.length} saved import${weeklyDraft.importKeys.length === 1 ? '' : 's'} in this draft.</p>` : ''}
     <details><summary>Preview meals</summary><h4>Dinners</h4><ol>
       ${weeklyDraft.meals.map(meal => `<li>${esc(meal.name)}</li>`).join('')}
     </ol><h4>Lunches</h4><ul>
@@ -514,6 +585,7 @@ function weeklyDraftView() {
 
 function startWeeklyPlan() {
   if (!weeklyDraft || !savePastWeek()) return;
+  scheduledImports.push(...weeklyDraft.importKeys);
   weekStart = weeklyDraft.week;
   meals.splice(0, meals.length, ...weeklyDraft.meals);
   lunchSelection = weeklyDraft.lunchSelection;
@@ -533,7 +605,7 @@ function resetWeek(){if(!confirm('Clear this saved plan and its checkmarks from 
 function menuView(){return `${weeklyDraftView()}<div class="section-head"><div><h3>Dinner, handled.</h3><p>Five flavor-forward dinners · serves 7 · tap a recipe or edit a meal</p></div></div><div class="grid">${meals.map((m,i)=>`<article class="meal">${m.img ? `<img src="${m.img}" alt="${esc(m.name)}" loading="lazy">` : ''}<div class="meal-body"><div class="meal-top"><span class="pill">${m.day} · ${m.date}</span><span style="font-size:11px;color:var(--muted)">${m.time}</span></div><h4>${esc(m.name)}</h4><p>${esc(m.desc)}</p><div class="meal-foot"><span>${m.cuisine}</span><span>${eaten[i]?'✓ Eaten':'Planned'}</span></div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" onclick="openRecipe(${i})">View recipe</button><button class="btn light" onclick="openEditor(${i})">Edit</button><button class="btn outline" onclick="swapMeal(${i})">Swap</button></div></div></article>`).join('')}</div><div class="section-head"><div><h3>Fast lunches</h3><p>Four low-effort ideas · serves 3–4 · tick when made</p></div></div><div class="panel">${lunchSelection.map((id,i)=>{const l=allLunches[id];return `<div class="lunch">${l[3]?`<img src="${l[3]}" alt="" loading="lazy">`: ''}<div style="flex:1"><h4>${l[0]}</h4><p>${l[1]}</p><small style="color:var(--green)">${l[2]} · quick assembly</small></div><label style="font-size:12px;white-space:nowrap"><input type="checkbox" ${lunchDone[i]?'checked':''} onchange="toggleLunch(${i},this.checked)"> Made</label></div>`}).join('')}</div><div class="note">The Nutrient Coach estimates coverage from the meals and additions in this plan.</div>`}
 function openEditor(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><h3 style="font:700 25px Georgia">Edit ${m.day} dinner</h3><label>Meal name<input id="editName" value="${esc(m.name)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Description<textarea id="editDesc" style="width:100%;min-height:76px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.desc)}</textarea></label><label>Cuisine<input id="editCuisine" value="${esc(m.cuisine)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Prep/cook time<input id="editTime" value="${esc(m.time)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Ingredients (one per line)<textarea id="editIngredients" style="width:100%;min-height:120px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.ingredients.join('\n'))}</textarea></label><label>Cooking steps (one per line)<textarea id="editSteps" style="width:100%;min-height:140px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.steps.join('\n'))}</textarea></label><button class="btn" onclick="saveMealEdit(${i})">Save meal</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function saveMealEdit(i){let m=meals[i];m.name=document.getElementById('editName').value.trim()||m.name;m.desc=document.getElementById('editDesc').value.trim();m.cuisine=document.getElementById('editCuisine').value.trim();m.time=document.getElementById('editTime').value.trim();const changedIngredients=document.getElementById('editIngredients').value.split('\n').map(x=>x.trim()).filter(Boolean);if(m.imported&&JSON.stringify(changedIngredients)!==JSON.stringify(m.ingredients))m.nutrition={};m.ingredients=changedIngredients;m.steps=document.getElementById('editSteps').value.split('\n').map(x=>x.trim()).filter(Boolean);closeModal();persistState();render();showToast('Meal updated.')}
+function saveMealEdit(i){let m=meals[i];m.name=document.getElementById('editName').value.trim()||m.name;m.desc=document.getElementById('editDesc').value.trim();m.cuisine=document.getElementById('editCuisine').value.trim();m.time=document.getElementById('editTime').value.trim();const changedIngredients=document.getElementById('editIngredients').value.split('\n').map(x=>x.trim()).filter(Boolean);if(JSON.stringify(changedIngredients)!==JSON.stringify(m.ingredients)){if(m.imported)m.nutrition={};delete m.portions;}m.ingredients=changedIngredients;m.steps=document.getElementById('editSteps').value.split('\n').map(x=>x.trim()).filter(Boolean);closeModal();persistState();render();showToast('Meal updated.')}
 function swapMeal(i) {
   const meal = meals[i];
   const inUse = new Set(meals.map(item => item.name));
@@ -789,8 +861,9 @@ function saveImportedRecipe(event) {
   const originalUnchanged = pendingRecipe && source === safeRecipeUrl(pendingRecipe.url) &&
     servings === estimateServings(pendingRecipe.servings) && raw.join('\n') === pendingRecipe.ingredients?.join('\n');
   const nutrition = originalUnchanged ? pendingRecipe.nutrition || {} : {};
+  const previous = source && recipeLibrary.find(item => item.source === source);
   const recipe = {
-    id: crypto.randomUUID(), name, source, imported: true, cuisine: 'IMPORTED',
+    id: previous?.id || crypto.randomUUID(), queueKey: crypto.randomUUID(), name, source, imported: true, cuisine: 'IMPORTED',
     time: displayRecipeTime(pendingRecipe?.time) || 'See recipe', img: '', tags: [],
     desc: 'Saved from your recipe library.',
     ingredients: scaled.map(entry => entry.line),
@@ -801,14 +874,35 @@ function saveImportedRecipe(event) {
   if (!storeCollection(LIBRARY_KEY, updated)) return;
   recipeLibrary = updated;
   pendingRecipe = null;
-  render();
-  showToast('Recipe saved and scaled to seven.');
+  weeklyDraft = null;
+  if (!refreshWeeklyDraft()) render();
+  showToast('Recipe saved and queued for an upcoming plan.');
+
+}
+
+function queuedImports() {
+  return [...recipeLibrary].reverse().filter(recipe =>
+    recipe.queueKey && !scheduledImports.includes(recipe.queueKey));
+}
+
+function catalogView() {
+  return `<div class="section-head"><div><h3>Built-in recipe library</h3></div></div>
+    <div class="panel"><details><summary>${dinnerCatalog.length} dinners · serves 7</summary>
+      ${dinnerCatalog.map(recipe => `<details><summary>${esc(recipe.name)} · ${recipe.time}</summary>
+        <ul>${recipe.ingredients.map(line => `<li>${esc(line)}</li>`).join('')}</ul>
+        <ol>${recipe.steps.map(step => `<li>${esc(step)}</li>`).join('')}</ol>
+      </details>`).join('')}</details>
+    <details><summary>${allLunches.length} quick lunches · serves 3–4</summary>
+      ${allLunches.map(([name, method, time], i) => `<details><summary>${esc(name)} · ${time}</summary>
+        <p>${esc(method)}</p><ul>${lunchGroceries[i].map(line => `<li>${esc(line)}</li>`).join('')}</ul>
+      </details>`).join('')}</details></div>`;
 }
 
 function libraryView() {
-  return `<div class="section-head"><div><h3>Saved recipes</h3><p>Recipes imported on this device.</p></div></div>
+  const queued = new Map(queuedImports().map((recipe, i) => [recipe.queueKey, i]));
+  return `<div class="section-head"><div><h3>Saved recipes</h3><p>New imports are queued for the next weekly draft. Extra imports roll into later weeks when all five dinner slots are filled.</p></div></div>
   ${recipeLibrary.length ? `<div class="panel">${recipeLibrary.map(recipe => `<div class="lunch">
-    <div style="flex:1"><h4>${esc(recipe.name)}</h4><p>${esc(recipe.time)} · serves 7</p></div>
+    <div style="flex:1"><h4>${esc(recipe.name)}</h4><p>${esc(recipe.time)} · serves 7${queued.has(recipe.queueKey) ? queued.get(recipe.queueKey) < 5 ? ' · queued for next week' : ' · queued for a later week' : ''}</p></div>
     <button class="btn light" onclick="openSavedRecipe('${recipe.id}')">Open</button></div>`).join('')}</div>` :
     '<p>Imported recipes will appear here.</p>'}`;
 }

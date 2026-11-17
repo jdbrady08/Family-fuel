@@ -16,7 +16,7 @@ Upload the *contents* of this folder to a static web host that serves HTTPS (for
 4. Keep “Open as Web App” enabled if offered, then tap Add.
 
 ## Weekly plans
-Open the app on Sunday at or after 8 a.m. device time to preview the upcoming Monday’s plan. The draft rotates through the built-in catalog and uses the planned-food score to select five dinners alongside four rotating quick lunches. Starting the draft replaces the active menu and clears its checkmarks and coach additions. This feature runs while the app is open, including offline once the app shell is cached.
+Open the app on Sunday at or after 8 a.m. device time to preview the upcoming Monday’s plan. The draft rotates through the built-in catalog and uses the planned-food score to select five dinners alongside four rotating quick lunches. The built-in library contains 28 dinners and 28 lunches. Newly saved imports are queued oldest first for the next draft’s dinner slots. The queue advances when you start that draft, and any extra imports carry over. Starting the draft replaces the active menu and clears its checkmarks and coach additions. This feature runs while the app is open, including offline once the app shell is cached.
 
 ## Imports and history
 The Recipes tab imports public recipe pages with Recipe JSON-LD and Pinterest Pins that expose an original recipe link. Review the original quantities and serving count before saving. Imported dinners link back to the publisher for the method. Only publisher per-serving protein and fiber values are currently used for imported dinners. Library entries and history stay in this browser.
