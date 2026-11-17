@@ -171,6 +171,93 @@ def recipe_image(page_url, structured, fallbacks):
     return ""
 
 
+class RecipeMicrodata(HTMLParser):
+    """Extract recipe fields scoped to a Schema.org Recipe element."""
+
+    void_tags = set("area base br col embed hr img input link meta param source track wbr".split())
+    fields = {"name", "recipeIngredient", "recipeYield", "image", "totalTime", "prepTime", "cookTime"}
+
+    def __init__(self):
+        super().__init__()
+        self.stack = []
+        self.recipes = []
+
+    def handle_starttag(self, tag, attributes):
+        attrs = dict(attributes)
+        recipe = self.stack[-1][1] if self.stack else None
+        if "itemscope" in attrs:
+            types = (attrs.get("itemtype") or "").split()
+            if any(value in {"http://schema.org/Recipe", "https://schema.org/Recipe"} for value in types):
+                recipe = {"recipeIngredient": []}
+                self.recipes.append(recipe)
+            else:
+                recipe = None
+        props = self.fields.intersection((attrs.get("itemprop") or "").split()) if recipe is not None else set()
+        value = None
+        if tag in {"meta", "data", "meter", "time", "a", "link", "img", "source"}:
+            attr = {"meta": "content", "data": "value", "meter": "value", "time": "datetime",
+                    "a": "href", "link": "href", "img": "src", "source": "src"}[tag]
+            value = attrs.get(attr)
+        if value is not None:
+            self.assign(recipe, props, value)
+            props = set()
+        if tag not in self.void_tags:
+            self.stack.append((tag, recipe, props, []))
+
+    def handle_startendtag(self, tag, attributes):
+        self.handle_starttag(tag, attributes)
+        if tag not in self.void_tags:
+            self.handle_endtag(tag)
+
+    def handle_data(self, data):
+        for _, _, props, chunks in self.stack:
+            if props:
+                chunks.append(data)
+
+    def handle_endtag(self, tag):
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index][0] == tag:
+                for _, recipe, props, chunks in reversed(self.stack[index:]):
+                    if props:
+                        self.assign(recipe, props, "".join(chunks))
+                del self.stack[index:]
+                return
+
+    @staticmethod
+    def assign(recipe, props, value):
+        for prop in props:
+            if prop == "recipeIngredient":
+                recipe[prop].append(value)
+            elif prop not in recipe:
+                recipe[prop] = value
+
+
+def structured_recipes(page, html):
+    for block in page.blocks:
+        try:
+            yield from list(find_recipe(json.loads(block)))
+        except (ValueError, RecursionError):
+            continue
+    microdata = RecipeMicrodata()
+    microdata.feed(html)
+    yield from microdata.recipes
+
+
+def recipe_time(recipe):
+    total = text(recipe.get("totalTime"), 40)
+    if total:
+        return total
+
+    minutes = 0
+    for field in ("prepTime", "cookTime"):
+        duration = re.fullmatch(r"PT(?:(\d{1,3})H)?(?:(\d{1,3})M)?", text(recipe.get(field), 40))
+        if not duration or not any(duration.groups()):
+            return ""
+        hours, remainder = (int(part or 0) for part in duration.groups())
+        minutes += 60 * hours + remainder
+    return f"PT{minutes}M" if minutes else ""
+
+
 def recipe_draft(url):
     for _ in range(2):
         url, html = fetch_page(url)
@@ -179,33 +266,28 @@ def recipe_draft(url):
         if urlsplit(url).hostname in PIN_HOSTS and page.source:
             url = page.source
             continue
-        for block in page.blocks:
-            try:
-                recipes = list(find_recipe(json.loads(block)))
-            except (ValueError, RecursionError):
+        for recipe in structured_recipes(page, html):
+            entries = recipe.get("recipeIngredient")
+            if not isinstance(entries, list):
                 continue
-            for recipe in recipes:
-                entries = recipe.get("recipeIngredient")
-                if not isinstance(entries, list):
-                    continue
-                ingredients = [line for entry in entries[:80] if (line := text(entry, 300))]
-                name = text(recipe.get("name"), 150)
-                if name and ingredients:
-                    food_label = recipe.get("nutrition")
-                    nutrition = {}
-                    if isinstance(food_label, dict) and re.fullmatch(
-                        r"1 (?:serving|portion)", text(food_label.get("servingSize"), 40), re.I
-                    ):
-                        for key, unit in {"proteinContent": "g", "fiberContent": "g"}.items():
-                            amount = re.fullmatch(r"(\d+(?:\.\d+)?)\s*" + unit, text(food_label.get(key), 24))
-                            if amount:
-                                nutrition[key] = float(amount.group(1))
-                    return {
-                        "name": name, "ingredients": ingredients, "url": url, "nutrition": nutrition,
-                        "servings": text(str(recipe.get("recipeYield") or ""), 80),
-                        "time": text(recipe.get("totalTime"), 40),
-                        "image": recipe_image(url, recipe.get("image"), page.images),
-                    }
+            ingredients = [line for entry in entries[:80] if (line := text(entry, 300))]
+            name = text(recipe.get("name"), 150)
+            if name and ingredients:
+                food_label = recipe.get("nutrition")
+                nutrition = {}
+                if isinstance(food_label, dict) and re.fullmatch(
+                    r"1 (?:serving|portion)", text(food_label.get("servingSize"), 40), re.I
+                ):
+                    for key, unit in {"proteinContent": "g", "fiberContent": "g"}.items():
+                        amount = re.fullmatch(r"(\d+(?:\.\d+)?)\s*" + unit, text(food_label.get(key), 24))
+                        if amount:
+                            nutrition[key] = float(amount.group(1))
+                return {
+                    "name": name, "ingredients": ingredients, "url": url, "nutrition": nutrition,
+                    "servings": text(str(recipe.get("recipeYield") or ""), 80),
+                    "time": recipe_time(recipe),
+                    "image": recipe_image(url, recipe.get("image"), page.images),
+                }
         break
     raise ImportErrorForUser("No structured ingredient list was found. Try the original recipe page or add it by hand.")
 

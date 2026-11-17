@@ -1063,6 +1063,7 @@ function showRecipeReview(draft = {}) {
     ${recipePhoto({img: draft.image}, 'recipe-source-photo')}
     <label>Name <input name="name" value="${esc(draft.name || '')}" maxlength="150" required></label>
     <label>Original servings <input name="servings" type="number" min="1" max="100" step="1" value="${estimateServings(draft.servings)}" required></label>
+    ${draft.servings && !estimateServings(draft.servings) ? `<p>The publisher lists <strong>${esc(draft.servings)}</strong>. Enter the serving count you want to use for scaling.</p>` : ''}
     <p><label>Original recipe link <input name="source" type="url" maxlength="2048" value="${esc(source)}"></label></p>
     <label>Ingredients for the original servings, one per line
       <textarea name="ingredients" required maxlength="12000" rows="8" style="display:block;width:100%">${esc((draft.ingredients || []).join('\n'))}</textarea>
