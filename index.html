@@ -30,12 +30,36 @@ const allLunches=[['Greek yogurt power bowls','Greek yogurt, berries, toasted oa
 ];
 let lunchSelection = [0, 1, 2, 3];
 
-let additions=[];let checked={};let eaten={};let current='menu';
+let additions=[];let dismissedRecs=[];let checked={};let eaten={};let current='menu';
 const recs = [
   {id:'beans', name:'Add kiwi and pumpkin seeds', portion:'One snack for seven, estimated at one kiwi and a tablespoon of seeds per serving.', add:'Kiwi and pumpkin-seed snack', shop:['7 kiwis','1 small bag pumpkin seeds']},
   {id:'yogurt', name:'Add plain yogurt and berries', portion:'One breakfast addition for seven, estimated at 170 g yogurt and 75 g berries per serving.', add:'Plain yogurt and berries', shop:['About 1.2 kg plain yogurt','About 525 g frozen berries']},
   {id:'greens', name:'Serve spinach at two dinners', portion:'Two sides for seven, estimated at ½ cup cooked spinach per person each time.', add:'Spinach at two dinners', shop:['Spinach for 7 cups cooked']},
   {id:'shellfish', name:'Add steamed mussels', portion:'One add-on for seven, estimated at 3 oz cooked mussel meat per serving.', add:'Steamed mussels', shop:['Mussels for about 21 oz cooked meat']},
+  {"id": "sunflower", "name": "Snack on sunflower kernels", "portion": "20 g unsalted sunflower kernels per serving. Makes seven servings.", "add": "Snack on sunflower kernels", "shop": ["140 g unsalted sunflower kernels"]},
+  {"id": "almonds", "name": "Serve almonds and orange slices", "portion": "20 g almonds and one small orange per serving. Makes seven servings.", "add": "Serve almonds and orange slices", "shop": ["140 g almonds", "7 small oranges"]},
+  {"id": "sweetpotato", "name": "Bake sweet potatoes", "portion": "One small baked sweet potato per serving. Makes seven servings.", "add": "Bake sweet potatoes", "shop": ["7 small sweet potatoes"]},
+  {"id": "broccoli", "name": "Serve steamed broccoli", "portion": "About ½ cup cooked broccoli per serving. Makes seven servings.", "add": "Serve steamed broccoli", "shop": ["Broccoli for 3½ cups cooked"]},
+  {"id": "trout", "name": "Add a side of trout", "portion": "About 3 oz cooked trout per serving. Makes seven servings.", "add": "Add a side of trout", "shop": ["Trout for about 21 oz cooked"]},
+  {"id": "milk", "name": "Serve fortified milk", "portion": "One cup of vitamin A- and D-fortified milk per serving. Makes seven servings.", "add": "Serve fortified milk", "shop": ["About ½ gallon vitamin A- and D-fortified milk"]},
+  {"id": "egg", "name": "Serve a hard-boiled egg", "portion": "One large hard-boiled egg per serving. Makes seven servings.", "add": "Serve a hard-boiled egg", "shop": ["7 large eggs"]},
+  {"id": "banana", "name": "Pair banana with walnuts", "portion": "One small banana and 15 g walnuts per serving. Makes seven servings.", "add": "Pair banana with walnuts", "shop": ["7 small bananas", "105 g walnuts"]},
+  {"id": "sardine", "name": "Top toast with sardines", "portion": "One slice of whole-wheat toast and 2 oz drained sardines with bones per serving. Makes seven servings.", "add": "Top toast with sardines", "shop": ["7 slices whole-wheat bread", "About 14 oz drained sardines with bones"]},
+  {"id": "lentils", "name": "Serve warm lentils", "portion": "About ½ cup cooked lentils per serving. Makes seven servings.", "add": "Serve warm lentils", "shop": ["Lentils for about 3½ cups cooked"]},
+  {"id": "edamame", "name": "Serve shelled edamame", "portion": "About ½ cup cooked shelled edamame per serving. Makes seven servings.", "add": "Serve shelled edamame", "shop": ["About 550 g shelled edamame"]},
+  {"id": "chickpeas", "name": "Toss chickpeas with peppers", "portion": "About ½ cup chickpeas and 50 g red pepper per serving. Makes seven servings.", "add": "Toss chickpeas with peppers", "shop": ["About 600 g drained chickpeas", "350 g red bell pepper"]},
+  {"id": "kale", "name": "Serve kale and tomato salad", "portion": "50 g kale and 75 g tomato per serving. Makes seven servings.", "add": "Serve kale and tomato salad", "shop": ["350 g kale", "525 g tomatoes"]},
+  {"id": "carrot", "name": "Serve carrots with hummus", "portion": "One carrot and two tablespoons of hummus per serving. Makes seven servings.", "add": "Serve carrots with hummus", "shop": ["7 carrots", "210 g hummus"]},
+  {"id": "oats", "name": "Stir flax into oatmeal", "portion": "40 g dry oats and a tablespoon of ground flax per serving. Makes seven servings.", "add": "Stir flax into oatmeal", "shop": ["280 g oats", "50 g ground flaxseed"]},
+  {"id": "avocado", "name": "Add avocado and white bean toast", "portion": "One slice of whole-wheat toast with 50 g avocado and 50 g white beans per serving. Makes seven servings.", "add": "Add avocado and white bean toast", "shop": ["7 slices whole-wheat bread", "350 g avocado flesh", "350 g drained white beans"]},
+  {"id": "pepper", "name": "Serve red pepper and guacamole", "portion": "One small red pepper and 50 g mashed avocado per serving. Makes seven servings.", "add": "Serve red pepper and guacamole", "shop": ["7 small red peppers", "350 g avocado flesh"]},
+  {"id": "parmesan", "name": "Top roasted cauliflower with Parmesan", "portion": "100 g cauliflower and 15 g Parmesan per serving. Makes seven servings.", "add": "Top roasted cauliflower with Parmesan", "shop": ["700 g cauliflower", "105 g Parmesan"]},
+  {"id": "berries", "name": "Serve yogurt with sunflower kernels", "portion": "170 g plain Greek yogurt and 15 g sunflower kernels per serving. Makes seven servings.", "add": "Serve yogurt with sunflower kernels", "shop": ["About 1.2 kg plain Greek yogurt", "105 g sunflower kernels"]},
+  {"id": "bulgur", "name": "Add a bulgur and radish salad", "portion": "100 g cooked bulgur and 35 g sliced radishes per serving. Makes seven servings.", "add": "Add a bulgur and radish salad", "shop": ["Bulgur for 700 g cooked", "245 g radishes"]},
+  {"id": "beansbroccoli", "name": "Serve white beans and broccoli", "portion": "About ½ cup white beans and ½ cup cooked broccoli per serving. Makes seven servings.", "add": "Serve white beans and broccoli", "shop": ["About 630 g drained white beans", "Broccoli for 3½ cups cooked"]},
+  {"id": "eggsweet", "name": "Serve a sweet potato and egg plate", "portion": "One small baked sweet potato and a hard-boiled egg per serving. Makes seven servings.", "add": "Serve a sweet potato and egg plate", "shop": ["7 small sweet potatoes", "7 large eggs"]},
+  {"id": "orangeoats", "name": "Serve fortified milk with oats and orange", "portion": "One cup fortified milk, 30 g dry oats and a small orange per serving. Makes seven servings.", "add": "Serve fortified milk with oats and orange", "shop": ["About ½ gallon vitamin A- and D-fortified milk", "210 g oats", "7 small oranges"]},
+  {"id": "spinachbeans", "name": "Serve spinach and chickpeas", "portion": "About ½ cup cooked spinach and ½ cup chickpeas per serving. Makes seven servings.", "add": "Serve spinach and chickpeas", "shop": ["Spinach for 3½ cups cooked", "About 600 g drained chickpeas"]},
 ];
 const lunchGroceries = [
   ['Greek yogurt','Blueberries','Oats','Pumpkin seeds','Ground flaxseed'],
@@ -56,52 +80,62 @@ function setView(v){current=v;document.querySelectorAll('.tab').forEach(b=>b.cla
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
 // USDA FoodData Central SR Legacy IDs and nutrient amounts per 100 g.
 const foodNutrients = {
-  "168153": [1.14, 3.0, 34.0, 0.31, 17.0, 312.0, 92.7, 0.0],
-  "168155": [0.7, 2.8, 33.0, 0.6, 6.0, 102.0, 29.1, 0.0],
-  "168409": [0.65, 0.5, 16.0, 0.28, 13.0, 147.0, 2.8, 0.0],
-  "168411": [11.91, 5.2, 63.0, 2.27, 64.0, 436.0, 6.1, 0.0],
-  "168421": [2.92, 4.1, 254.0, 1.6, 33.0, 348.0, 93.4, 0.0],
-  "168462": [2.86, 2.2, 99.0, 2.71, 79.0, 558.0, 28.1, 0.0],
-  "168463": [2.97, 2.4, 136.0, 3.57, 87.0, 466.0, 9.8, 0.0],
-  "168660": [19.18, 0.0, 17.0, 2.08, 19.0, 332.0, 0.0, 0.1],
-  "169094": [0.84, 1.6, 88.0, 6.28, 4.0, 8.0, 0.9, 0.0],
-  "169249": [1.36, 1.3, 36.0, 0.86, 13.0, 194.0, 9.2, 0.0],
-  "169251": [3.09, 1.0, 3.0, 0.5, 9.0, 318.0, 2.1, 0.2],
-  "169276": [0.68, 1.6, 25.0, 0.34, 10.0, 233.0, 14.8, 0.0],
-  "169414": [18.29, 27.3, 255.0, 5.73, 392.0, 813.0, 0.6, 0.0],
-  "169703": [7.54, 3.6, 9.0, 1.29, 116.0, 250.0, 0.0, 0.0],
-  "169705": [16.89, 10.6, 54.0, 4.72, 177.0, 429.0, 0.0, 0.0],
-  "169738": [13.87, 9.2, 29.0, 3.62, 128.0, 434.0, 0, 0.0],
-  "169977": [1.43, 2.1, 45.0, 0.8, 16.0, 243.0, 57.0, 0.0],
-  "169986": [1.92, 2.0, 22.0, 0.42, 15.0, 299.0, 48.2, 0.0],
-  "170000": [1.1, 1.7, 23.0, 0.21, 10.0, 146.0, 7.4, 0.0],
-  "170108": [0.99, 2.1, 7.0, 0.43, 12.0, 211.0, 127.7, 0.0],
-  "170287": [3.08, 4.5, 10.0, 0.96, 32.0, 68.0, 0.0, 0.0],
-  "170393": [0.93, 2.8, 33.0, 0.3, 12.0, 320.0, 5.9, 0.0],
-  "170457": [0.88, 1.2, 10.0, 0.27, 11.0, 237.0, 13.7, 0.0],
-  "170501": [1.64, 1.9, 34.0, 1.3, 20.0, 293.0, 9.2, 0.0],
-  "170556": [30.23, 6.0, 46.0, 8.82, 592.0, 809.0, 1.9, 0.0],
-  "170688": [12.29, 12.5, 35.0, 2.46, 164.0, 410.0, 0.0, 0.0],
-  "170848": [35.75, 0.0, 1184.0, 0.82, 44.0, 92.0, 0.0, 0.5],
-  "170903": [9.95, 0.0, 115.0, 0.04, 11.0, 141.0, 0.8, 0.0],
-  "171284": [3.47, 0.0, 121.0, 0.05, 12.0, 155.0, 0.5, 0.1],
-  "171287": [12.56, 0.0, 56.0, 1.75, 12.0, 138.0, 0.0, 2.0],
-  "171705": [2.0, 6.7, 12.0, 0.55, 29.0, 485.0, 10.0, 0.0],
-  "171711": [0.74, 2.4, 6.0, 0.28, 6.0, 77.0, 9.7, 0.0],
-  "172421": [9.02, 7.9, 19.0, 3.33, 36.0, 369.0, 1.5, 0.0],
-  "172442": [12.79, 5.4, 57.0, 2.49, 48.0, 210.0, 0.0, 0.0],
-  "172688": [12.45, 6.0, 161.0, 2.47, 75.0, 254.0, 0.0, 0.0],
-  "172850": [18.73, 0.0, 21.0, 1.17, 21.0, 213.0, 0.0, 0.4],
-  "173627": [19.66, 0.0, 7.0, 0.81, 23.0, 242.0, 0.0, 0.0],
-  "173800": [7.05, 6.4, 45.0, 1.07, 26.0, 126.0, 0.1, 0.0],
-  "174217": [23.8, 0.0, 33.0, 6.72, 37.0, 268.0, 13.6, 0],
-  "174289": [7.78, 5.5, 47.0, 2.54, 75.0, 312.0, 0.0, 0.0],
-  "174916": [9.8, 6.1, 15.0, 3.06, 69.0, 170.0, 0.0, 0.0],
-  "175036": [5.7, 6.3, 81.0, 1.23, 72.0, 186.0, 0.0, 0.0],
-  "175139": [24.62, 0.0, 382.0, 2.92, 39.0, 397.0, 0.0, 4.8],
-  "175167": [20.42, 0.0, 9.0, 0.34, 27.0, 363.0, 3.9, 11.0],
-  "175179": [20.1, 0, 64.0, 0.52, 35.0, 264.0, 0, 0],
-  "175204": [7.26, 4.8, 73.0, 2.99, 51.0, 454.0, 0.0, 0.0],
+  "168153": [1.14, 3.0, 34.0, 0.31, 17.0, 312.0, 92.7, 0.0, 4.0, 1.46, 40.3, 0.027, 0.025, 0.341, 0.063, 25.0, 0.0, 0.14, 0.2, 34.0, 0.13, 0.098],
+  "168155": [0.7, 2.8, 33.0, 0.6, 6.0, 102.0, 29.1, 0.0, 2.0, 0.22, 0.6, 0.03, 0.02, 0.2, 0.043, 8.0, 0.0, 0.11, 0.4, 18.0, 0.065, 0.008],
+  "168409": [0.65, 0.5, 16.0, 0.28, 13.0, 147.0, 2.8, 0.0, 5.0, 0.03, 16.4, 0.027, 0.033, 0.098, 0.04, 7.0, 0.0, 0.2, 0.3, 24.0, 0.041, 0.079],
+  "168411": [11.91, 5.2, 63.0, 2.27, 64.0, 436.0, 6.1, 0.0, 15.0, 0.68, 26.7, 0.2, 0.155, 0.915, 0.1, 311.0, 0.0, 1.37, 0.8, 169.0, 0.345, 1.024],
+  "168421": [2.92, 4.1, 254.0, 1.6, 33.0, 348.0, 93.4, 0.0, 241.0, 0.66, 389.6, 0.113, 0.347, 1.18, 0.147, 62.0, 0.0, 0.39, 0.9, 55.0, 0.053, 0.92],
+  "168462": [2.86, 2.2, 99.0, 2.71, 79.0, 558.0, 28.1, 0.0, 469.0, 2.03, 482.9, 0.078, 0.189, 0.724, 0.195, 194.0, 0.0, 0.53, 1.0, 49.0, 0.13, 0.897],
+  "168463": [2.97, 2.4, 136.0, 3.57, 87.0, 466.0, 9.8, 0.0, 524.0, 2.08, 493.6, 0.095, 0.236, 0.49, 0.242, 146.0, 0.0, 0.76, 1.5, 56.0, 0.174, 0.935],
+  "168483": [2.01, 3.3, 38.0, 0.69, 27.0, 475.0, 19.6, 0.0, 961.0, 0.71, 2.3, 0.107, 0.106, 1.487, 0.286, 6.0, 0.0, 0.32, 0.2, 54.0, 0.161, 0.497],
+  "168660": [19.18, 0.0, 17.0, 2.08, 19.0, 332.0, 0.0, 0.1, 4.0, 0.19, 1.5, 0.066, 0.145, 4.324, 0.383, 3.0, 2.73, 7.52, 20.6, 189.0, 0.061, 0.01],
+  "169094": [0.84, 1.6, 88.0, 6.28, 4.0, 8.0, 0.9, 0.0, 17.0, 1.65, 1.4, 0.003, 0.0, 0.037, 0.009, 0.0, 0.0, 0.22, 0.9, 3.0, 0.251, 0.02],
+  "169097": [0.94, 2.4, 40.0, 0.1, 10.0, 181.0, 53.2, 0.0, 11.0, 0.18, 0.0, 0.087, 0.04, 0.282, 0.06, 30.0, 0.0, 0.07, 0.5, 14.0, 0.045, 0.025],
+  "169249": [1.36, 1.3, 36.0, 0.86, 13.0, 194.0, 9.2, 0.0, 370.0, 0.22, 126.3, 0.07, 0.08, 0.375, 0.09, 38.0, 0.0, 0.18, 0.6, 29.0, 0.029, 0.25],
+  "169251": [3.09, 1.0, 3.0, 0.5, 9.0, 318.0, 2.1, 0.2, 0.0, 0.01, 0.0, 0.081, 0.402, 3.607, 0.104, 17.0, 0.04, 0.52, 9.3, 86.0, 0.318, 0.047],
+  "169276": [0.68, 1.6, 25.0, 0.34, 10.0, 233.0, 14.8, 0.0, 0.0, 0.0, 1.3, 0.012, 0.039, 0.254, 0.071, 25.0, 0.0, 0.28, 0.6, 20.0, 0.05, 0.069],
+  "169414": [18.29, 27.3, 255.0, 5.73, 392.0, 813.0, 0.6, 0.0, 0.0, 0.31, 4.3, 1.644, 0.161, 3.08, 0.473, 87.0, 0.0, 4.34, 25.4, 642.0, 1.22, 2.482],
+  "169703": [7.54, 3.6, 9.0, 1.29, 116.0, 250.0, 0.0, 0.0, 0.0, 0.6, 0.6, 0.541, 0.095, 6.494, 0.477, 23.0, 0.0, 2.13, 17.1, 311.0, 0.302, 2.853],
+  "169705": [16.89, 10.6, 54.0, 4.72, 177.0, 429.0, 0.0, 0.0, 0.0, 0, 0, 0.763, 0.139, 0.961, 0.119, 56.0, 0.0, 3.97, 0, 523.0, 0.626, 4.916],
+  "169738": [13.87, 9.2, 29.0, 3.62, 128.0, 434.0, 0, 0.0, 0, 0.46, 1.4, 0.407, 0.218, 8.691, 0.283, 69.0, 0.0, 2.97, 77.6, 343.0, 0.497, 2.983],
+  "169967": [2.38, 3.3, 40.0, 0.67, 21.0, 293.0, 64.9, 0.0, 77.0, 1.45, 141.1, 0.063, 0.123, 0.553, 0.2, 108.0, 0.0, 0.45, 1.6, 67.0, 0.061, 0.194],
+  "169977": [1.43, 2.1, 45.0, 0.8, 16.0, 243.0, 57.0, 0.0, 56.0, 0.11, 38.2, 0.064, 0.069, 0.418, 0.209, 18.0, 0.0, 0.22, 0.6, 30.0, 0.017, 0.243],
+  "169986": [1.92, 2.0, 22.0, 0.42, 15.0, 299.0, 48.2, 0.0, 0.0, 0.08, 15.5, 0.05, 0.06, 0.507, 0.184, 57.0, 0.0, 0.27, 0.6, 44.0, 0.039, 0.155],
+  "170000": [1.1, 1.7, 23.0, 0.21, 10.0, 146.0, 7.4, 0.0, 0.0, 0.02, 0.4, 0.046, 0.027, 0.116, 0.12, 19.0, 0.0, 0.17, 0.5, 29.0, 0.039, 0.129],
+  "170108": [0.99, 2.1, 7.0, 0.43, 12.0, 211.0, 127.7, 0.0, 157.0, 1.58, 4.9, 0.054, 0.085, 0.979, 0.291, 46.0, 0.0, 0.25, 0.1, 26.0, 0.017, 0.112],
+  "170187": [15.23, 6.7, 98.0, 2.91, 158.0, 441.0, 1.3, 0.0, 1.0, 0.7, 2.7, 0.341, 0.15, 1.125, 0.537, 98.0, 0.0, 3.09, 4.9, 346.0, 1.586, 3.414],
+  "170287": [3.08, 4.5, 10.0, 0.96, 32.0, 68.0, 0.0, 0.0, 0.0, 0.01, 0.5, 0.057, 0.028, 1.0, 0.083, 18.0, 0.0, 0.57, 0.6, 40.0, 0.075, 0.609],
+  "170393": [0.93, 2.8, 33.0, 0.3, 12.0, 320.0, 5.9, 0.0, 835.0, 0.66, 13.2, 0.066, 0.058, 0.983, 0.138, 19.0, 0.0, 0.24, 0.1, 35.0, 0.045, 0.143],
+  "170457": [0.88, 1.2, 10.0, 0.27, 11.0, 237.0, 13.7, 0.0, 42.0, 0.54, 7.9, 0.037, 0.019, 0.594, 0.08, 15.0, 0.0, 0.17, 0.0, 24.0, 0.059, 0.114],
+  "170501": [1.64, 1.9, 34.0, 1.3, 20.0, 293.0, 9.2, 0.0, 11.0, 1.25, 5.3, 0.075, 0.052, 1.222, 0.15, 13.0, 0.0, 0.27, 0.6, 32.0, 0.183, 0.183],
+  "170556": [30.23, 6.0, 46.0, 8.82, 592.0, 809.0, 1.9, 0.0, 1.0, 2.18, 7.3, 0.273, 0.153, 4.987, 0.143, 58.0, 0.0, 7.81, 9.4, 1233.0, 1.343, 4.543],
+  "170562": [20.78, 8.6, 78.0, 5.25, 325.0, 645.0, 1.4, 0.0, 3.0, 35.17, 0.0, 1.48, 0.355, 8.335, 1.345, 227.0, 0.0, 5.0, 53.0, 660.0, 1.8, 1.95],
+  "170567": [21.15, 12.5, 269.0, 3.71, 270.0, 733.0, 0.0, 0.0, 0.0, 25.63, 0.0, 0.205, 1.138, 3.618, 0.137, 44.0, 0.0, 3.12, 4.1, 481.0, 1.031, 2.179],
+  "170688": [12.29, 12.5, 35.0, 2.46, 164.0, 410.0, 0.0, 0.0, 0.0, 0.06, 1.9, 0.232, 0.115, 5.114, 0.342, 27.0, 0.0, 1.93, 2.3, 300.0, 0.335, 3.048],
+  "170848": [35.75, 0.0, 1184.0, 0.82, 44.0, 92.0, 0.0, 0.5, 207.0, 0.22, 1.7, 0.039, 0.332, 0.271, 0.091, 7.0, 1.2, 2.75, 22.5, 694.0, 0.032, 0.02],
+  "170903": [9.95, 0.0, 115.0, 0.04, 11.0, 141.0, 0.8, 0.0, 90.0, 0.04, 0.2, 0.044, 0.233, 0.197, 0.055, 12.0, 0.52, 0.6, 12.4, 137.0, 0.021, 0.007],
+  "171267": [3.3, 0.0, 120.0, 0.02, 11.0, 140.0, 0.2, 1.2, 55.0, 0.03, 0.2, 0.039, 0.185, 0.092, 0.038, 5.0, 0.53, 0.48, 2.5, 92.0, 0.006, 0.014],
+  "171284": [3.47, 0.0, 121.0, 0.05, 12.0, 155.0, 0.5, 0.1, 27.0, 0.06, 0.2, 0.029, 0.142, 0.075, 0.032, 7.0, 0.37, 0.59, 2.2, 95.0, 0.009, 0.004],
+  "171287": [12.56, 0.0, 56.0, 1.75, 12.0, 138.0, 0.0, 2.0, 160.0, 1.05, 0.3, 0.04, 0.457, 0.075, 0.17, 47.0, 0.89, 1.29, 30.7, 198.0, 0.072, 0.028],
+  "171705": [2.0, 6.7, 12.0, 0.55, 29.0, 485.0, 10.0, 0.0, 7.0, 2.07, 21.0, 0.067, 0.13, 1.738, 0.257, 81.0, 0.0, 0.64, 0.4, 52.0, 0.19, 0.142],
+  "171711": [0.74, 2.4, 6.0, 0.28, 6.0, 77.0, 9.7, 0.0, 3.0, 0.57, 19.3, 0.037, 0.041, 0.418, 0.052, 6.0, 0.0, 0.16, 0.1, 12.0, 0.057, 0.336],
+  "172421": [9.02, 7.9, 19.0, 3.33, 36.0, 369.0, 1.5, 0.0, 0.0, 0.11, 1.7, 0.169, 0.073, 1.06, 0.178, 181.0, 0.0, 1.27, 2.8, 180.0, 0.251, 0.494],
+  "172442": [12.79, 5.4, 57.0, 2.49, 48.0, 210.0, 0.0, 0.0, 4.0, 0.01, 29.3, 0.098, 0.233, 0.906, 0.199, 19.0, 0.08, 2.56, 7.0, 159.0, 0.42, 0.859],
+  "172688": [12.45, 6.0, 161.0, 2.47, 75.0, 254.0, 0.0, 0.0, 0.0, 2.66, 7.8, 0.394, 0.167, 4.438, 0.215, 42.0, 0.0, 1.77, 25.7, 212.0, 0.227, 2.174],
+  "172850": [18.73, 0.0, 21.0, 1.17, 21.0, 213.0, 0.0, 0.4, 22.0, 0.11, 0.0, 0.067, 0.185, 5.417, 0.35, 7.0, 1.2, 2.53, 19.0, 193.0, 0.107, 0.008],
+  "173424": [12.58, 0.0, 50.0, 1.19, 10.0, 126.0, 0.0, 2.2, 149.0, 1.03, 0.3, 0.066, 0.513, 0.064, 0.121, 44.0, 1.11, 1.05, 30.8, 172.0, 0.013, 0.026],
+  "173627": [19.66, 0.0, 7.0, 0.81, 23.0, 242.0, 0.0, 0.0, 7.0, 0.18, 2.9, 0.088, 0.196, 5.557, 0.451, 4.0, 0.61, 1.58, 22.9, 185.0, 0.062, 0.013],
+  "173718": [23.8, 0.0, 30.0, 0.36, 30.0, 450.0, 2.9, 19.0, 100.0, 2.79, 0.1, 0.143, 0.107, 6.646, 0.386, 12.0, 4.11, 0.54, 28.1, 270.0, 0.055, 0.013],
+  "173800": [7.05, 6.4, 45.0, 1.07, 26.0, 126.0, 0.1, 0.0, 1.0, 0.29, 3.4, 0.027, 0.015, 0.14, 0.116, 48.0, 0.0, 0.63, 3.1, 85.0, 0.253, 0.846],
+  "173944": [1.09, 2.6, 5.0, 0.26, 27.0, 358.0, 8.7, 0.0, 3.0, 0.1, 0.5, 0.031, 0.073, 0.665, 0.367, 20.0, 0.0, 0.15, 1.0, 22.0, 0.078, 0.27],
+  "174217": [23.8, 0.0, 33.0, 6.72, 37.0, 268.0, 13.6, 0, 91.0, 0, 0, 0.3, 0.42, 3.0, 0.1, 76.0, 24.0, 2.67, 89.6, 285.0, 0.149, 6.8],
+  "174289": [7.78, 5.5, 47.0, 2.54, 75.0, 312.0, 0.0, 0.0, 1.0, 1.54, 22.8, 0.16, 0.127, 1.024, 0.146, 48.0, 0.0, 1.44, 4.7, 181.0, 0.377, 1.155],
+  "174916": [9.8, 6.1, 15.0, 3.06, 69.0, 170.0, 0.0, 0.0, 0.0, 0.61, 1.4, 0.339, 0.08, 2.84, 0.265, 35.0, 0.0, 1.52, 44.0, 180.0, 0.29, 1.74],
+  "175036": [5.7, 6.3, 81.0, 1.23, 72.0, 186.0, 0.0, 0.0, 0.0, 0.28, 0.0, 0.094, 0.065, 1.498, 0.219, 5.0, 0.0, 1.31, 6.1, 314.0, 0.154, 0.326],
+  "175139": [24.62, 0.0, 382.0, 2.92, 39.0, 397.0, 0.0, 4.8, 32.0, 2.04, 2.6, 0.08, 0.227, 5.245, 0.167, 10.0, 8.94, 1.31, 52.7, 490.0, 0.186, 0.108],
+  "175167": [20.42, 0.0, 9.0, 0.34, 27.0, 363.0, 3.9, 11.0, 58.0, 3.55, 0.5, 0.207, 0.155, 8.672, 0.636, 26.0, 3.23, 0.36, 24.0, 240.0, 0.045, 0.011],
+  "175179": [20.1, 0, 64.0, 0.52, 35.0, 264.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.34, 0, 214.0, 0.391, 0.033],
+  "175204": [7.26, 4.8, 73.0, 2.99, 51.0, 454.0, 0.0, 0.0, 0.0, 0.79, 2.9, 0.096, 0.037, 0.113, 0.075, 65.0, 0.0, 1.12, 1.6, 91.0, 0.232, 0.515],
 };
 const dinnerPortions = {
   "2.5 lb salmon": [175167, 1134],
@@ -157,11 +191,49 @@ const coachPortions = {
   "yogurt": [[171284, 170], [171711, 75]],
   "greens": [[168463, 180]],
   "shellfish": [[174217, 85]],
+  "sunflower": [[170562, 20]],
+  "almonds": [[170567, 20], [169097, 100]],
+  "sweetpotato": [[168483, 130]],
+  "broccoli": [[169967, 78]],
+  "trout": [[173718, 85]],
+  "milk": [[171267, 244]],
+  "egg": [[173424, 50]],
+  "banana": [[173944, 100], [170187, 15]],
+  "sardine": [[172688, 28], [175139, 57]],
+  "lentils": [[172421, 100]],
+  "edamame": [[168411, 78]],
+  "chickpeas": [[173800, 85], [170108, 50]],
+  "kale": [[168421, 50], [170457, 75]],
+  "carrot": [[170393, 61], [174289, 30]],
+  "oats": [[169705, 40], [169414, 7]],
+  "avocado": [[172688, 28], [171705, 50], [175204, 50]],
+  "pepper": [[170108, 100], [171705, 50]],
+  "parmesan": [[169986, 100], [170848, 15]],
+  "berries": [[170903, 170], [170562, 15]],
+  "bulgur": [[170287, 100], [169276, 35]],
+  "beansbroccoli": [[175204, 90], [169967, 78]],
+  "eggsweet": [[168483, 130], [173424, 50]],
+  "orangeoats": [[171267, 244], [169705, 30], [169097, 100]],
+  "spinachbeans": [[168463, 90], [173800, 85]],
 };
 
 const nutrientTargets = [
   ['Protein', 50], ['Fiber', 28], ['Calcium', 1300], ['Iron', 18],
   ['Magnesium', 420], ['Potassium', 4700], ['Vitamin C', 90], ['Vitamin D', 20],
+  ['Vitamin A', 900],
+  ['Vitamin E', 15],
+  ['Vitamin K', 120],
+  ['B1', 1.2],
+  ['B2', 1.3],
+  ['B3', 16],
+  ['B6', 1.7],
+  ['Folate', 400],
+  ['B12', 2.4],
+  ['Zinc', 11],
+  ['Selenium', 55],
+  ['Phosphorus', 1250],
+  ['Copper', 0.9],
+  ['Manganese', 2.3],
 ];
 
 function estimateNutrients(portions) {
@@ -209,22 +281,40 @@ function formatCoverage(value) {
   return value.toFixed(1);
 }
 
-function nutrientRadar(coverage) {
+function nutrientRadar(coverage, start, end) {
+  const axes = nutrientTargets.slice(start, end);
+  const values = coverage.slice(start, end);
   const point = (i, scale) => {
-    const angle = 2 * Math.PI * i / nutrientTargets.length - Math.PI / 2;
-    return [160 + 88 * scale * Math.cos(angle), 134 + 88 * scale * Math.sin(angle)];
+    const angle = 2 * Math.PI * i / axes.length - Math.PI / 2;
+    return [160 + 83 * scale * Math.cos(angle), 125 + 83 * scale * Math.sin(angle)];
   };
-  const polygon = scales => nutrientTargets.map((_, i) => point(i, scales(i)).join(',')).join(' ');
-  return `<svg viewBox="0 0 320 268" width="100%" style="display:block;max-width:420px;margin:auto" aria-hidden="true">
+  const polygon = scales => axes.map((_, i) => point(i, scales(i)).join(',')).join(' ');
+  return `<svg viewBox="0 0 320 250" width="100%" style="display:block;max-width:380px;margin:auto" aria-hidden="true">
     ${[.25, .5, .75, 1].map(level => `<polygon points="${polygon(() => level)}" fill="none" stroke="#adb9a7"/>`).join('')}
-    ${nutrientTargets.map(([name], i) => {
+    ${axes.map(([name], i) => {
       const [x, y] = point(i, 1);
       const [labelX, labelY] = point(i, 1.32);
-      return `<line x1="160" y1="134" x2="${x}" y2="${y}" stroke="#adb9a7"/>
-        <text x="${labelX}" y="${labelY}" fill="currentColor" text-anchor="middle" dominant-baseline="middle" font-size="11">${name}</text>`;
+      return `<line x1="160" y1="125" x2="${x}" y2="${y}" stroke="#adb9a7"/>
+        <text x="${labelX}" y="${labelY}" fill="currentColor" text-anchor="middle" dominant-baseline="middle" font-size="10">${name}</text>`;
     }).join('')}
-    <polygon points="${polygon(i => coverage[i] / 100)}" fill="#34764b" fill-opacity=".32" stroke="#34764b" stroke-width="2"/>
+    <polygon points="${polygon(i => values[i] / 100)}" fill="#34764b" fill-opacity=".32" stroke="#34764b" stroke-width="2"/>
   </svg>`;
+}
+
+function coachSuggestions(coverage, gaps) {
+  return recs
+    .filter(rec => !dismissedRecs.includes(rec.id) && !additions.some(item => item.id === rec.id))
+    .map(rec => {
+      const projected = weeklyCoverage(weeklyNutrients([...additions, rec]));
+      const changes = gaps.map(gap => ({...gap, gain: projected[gap.i] - gap.value}));
+      const priorityGain = changes.slice(0, 3).reduce((sum, gap) => sum + gap.gain, 0);
+      const scoreGain = coverageScore(projected) - coverageScore(coverage);
+      const highlights = changes.filter(gap => gap.gain >= .05)
+        .sort((a, b) => b.gain - a.gain).slice(0, 2);
+      return {rec, projected, priorityGain, scoreGain, highlights};
+    })
+    .filter(item => item.scoreGain > 0)
+    .sort((a, b) => b.priorityGain - a.priorityGain || b.scoreGain - a.scoreGain);
 }
 
 function coachView() {
@@ -232,12 +322,7 @@ function coachView() {
   const score = coverageScore(coverage);
   const gaps = nutrientTargets.map(([name], i) => ({name, i, value: coverage[i]}))
     .sort((a, b) => a.value - b.value);
-  const available = recs.filter(rec => !additions.some(item => item.id === rec.id))
-    .map(rec => {
-      const projected = weeklyCoverage(weeklyNutrients([...additions, rec]));
-      const gain = gaps.slice(0, 3).reduce((sum, gap) => sum + projected[gap.i] - gap.value, 0);
-      return {rec, projected, gain};
-    }).sort((a, b) => b.gain - a.gain);
+  const available = coachSuggestions(coverage, gaps).slice(0, 3);
   const rows = gaps.map(({name, value}) => `<div class="nutrient">
     <span>${name}</span><div class="bar"><div class="fill" style="width:${value}%"></div></div>
     <strong>${esc(formatCoverage(value))}%</strong></div>`).join('');
@@ -252,17 +337,24 @@ function coachView() {
     </ul></details>`).join('');
   return `<div class="section-head"><div><h3>Nutrient coverage</h3><p>Estimated contribution from the meals in this plan</p></div></div>
     <div class="panel"><div class="stat" aria-live="polite"><strong>${esc(formatCoverage(score))} / 100</strong><span>Weekly planned-food score</span></div>
-    ${nutrientRadar(coverage)}${rows}
-    <div class="note">The score averages eight nutrient percentages, capping each at 100%. It uses seven days of FDA label Daily Values as a shared reference. Dinners count for seven, lunches assume an average of 3.5 servings across seven people, and selected additions count as planned. Estimates use USDA food matches and approximate portions. Unmatched ingredients and unplanned meals are excluded. Individual needs and actual intake vary.</div>
+    ${nutrientRadar(coverage, 0, 8)}
+    <details><summary>Vitamin radar</summary>${nutrientRadar(coverage, 8, 17)}</details>
+    <details><summary>Additional mineral radar</summary>${nutrientRadar(coverage, 17, 22)}</details>
+    ${rows}
+    <div class="note">The score averages ${nutrientTargets.length} nutrient percentages, capping each at 100%. It uses seven days of FDA label Daily Values as a shared reference. Dinners count for seven, lunches assume an average of 3.5 servings across seven people, and selected additions count as planned. Estimates use USDA food matches and approximate portions. Missing food values are omitted from totals. Unmatched ingredients and unplanned meals are excluded. Individual needs and actual intake vary.</div>
     ${unmatched.length ? `<details><summary>${unmatched.length} ingredient entries excluded from the estimate</summary>
       <ul>${unmatched.map(line => `<li>${esc(line)}</li>`).join('')}</ul></details>` : ''}
     ${meals.some(meal => meal.imported) ? '<p>Imported dinners add only verified publisher protein and fiber when available. Other nutrients for those dinners are omitted from the totals.</p>' : ''}
     <details><summary>Estimates by meal</summary>${perMeal}</details></div>
-    <div class="section-head"><div><h3>Nutrient Gap Coach</h3><p>Suggestions are ordered by contribution to the three lowest nutrients.</p></div></div>
-    <div class="coach">${available.map(({rec, projected}) => `<article class="rec">
+    <div class="section-head"><div><h3>Nutrient Gap Coach</h3><p>Suggestions refresh after you add or dismiss one. The coach prioritizes the three lowest nutrients.</p></div></div>
+    ${available.length ? '' : '<p>No more suggestions with an estimated gain for this plan. You can restore dismissed ideas or undo an addition.</p>'}
+    <div class="coach">${available.map(({rec, projected, highlights}) => `<article class="rec">
     <h4>${rec.name}</h4><p>${rec.portion}</p>
     <p>Projected score <strong>${esc(formatCoverage(coverageScore(projected)))} / 100</strong></p>
-    <button class="btn" onclick="addRec('${rec.id}')">Add to plan</button></article>`).join('')}</div>
+    ${highlights.length ? `<p>${highlights.map(({name, gain}) => name + ' +' + gain.toFixed(1) + ' pp').join(' · ')}</p>` : ''}
+    <button class="btn" onclick="addRec('${rec.id}')">Add to plan</button>
+    <button class="btn light" onclick="dismissRec('${rec.id}')">Dismiss</button></article>`).join('')}</div>
+    ${dismissedRecs.length ? `<p><button class="link" onclick="restoreDismissedRecs()">Restore dismissed suggestions (${dismissedRecs.length})</button></p>` : ''}
     ${additions.length ? `<div class="section-head"><div><h3>Added to your plan</h3></div></div>
     <div class="panel">${additions.map(rec => `<div class="shopitem"><span>${rec.add}</span>
     <button class="link" onclick="removeRec('${rec.id}')">Undo</button></div>`).join('')}</div>` : ''}`;
@@ -274,8 +366,6 @@ function render(){document.getElementById('weekLabel').textContent=weekLabel(wee
 function openRecipe(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><span class="pill">${m.cuisine} · SERVES 7</span><h3 style="font:700 27px Georgia;margin:12px 0">${esc(m.name)}</h3><div class="recipe">${m.img ? `<img src="${m.img}" alt="">` : ''}<div><b>Ingredients</b><ul>${m.ingredients.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>${m.imported ? sourceLink(m) + '<p>Review quantities and follow the source cooking directions.</p>' : `<h4>Method</h4><ol>${m.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`}<p style="font-size:12px;color:var(--muted)">${m.imported ? 'Imported recipe · partial nutrient data' : `Estimated cost: ${m.cost}. Nutrient tags: ${m.tags.join(' · ')}.`}</p><button class="btn" onclick="markEaten(${i})">${eaten[i]?'✓ Confirmed eaten':'Mark as eaten'}</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
 function closeModal(){document.getElementById('modal').classList.add('hide')}
 function markEaten(i){eaten[i]=!eaten[i];showToast(eaten[i]?'Marked as eaten':'Eaten status removed');closeModal();render()}
-function addRec(id){let r=recs.find(x=>x.id===id);if(!additions.some(x=>x.id===id)){additions.push(r);showToast('Added to projected plan and shopping list');render()}}
-function removeRec(id){additions=additions.filter(x=>x.id!==id);render()}
 function toggleShop(id){checked[id]=!checked[id];render()}
 
 // Family Fuel v2: durable local state and real menu, recipe, coach and grocery actions.
@@ -364,7 +454,7 @@ function draftWeek(week, previousMeals, previousLunches) {
 }
 
 function storedPlan() {
-  return {weekStart, meals, lunchSelection, additions: additions.map(rec => rec.id), checked, eaten, lunchDone};
+  return {weekStart, meals, lunchSelection, additions: additions.map(rec => rec.id), dismissedRecs, checked, eaten, lunchDone};
 }
 
 function persistState() {
@@ -389,6 +479,8 @@ function loadState() {
       lunchSelection = saved.lunchSelection;
     }
     additions = (saved.additions || []).map(id => recs.find(rec => rec.id === id)).filter(Boolean);
+    dismissedRecs = Array.isArray(saved.dismissedRecs)
+      ? [...new Set(saved.dismissedRecs)].filter(id => recs.some(rec => rec.id === id)) : [];
     checked = saved.checked || {};
     eaten = saved.eaten || {};
     lunchDone = saved.lunchDone || {};
@@ -426,6 +518,7 @@ function startWeeklyPlan() {
   meals.splice(0, meals.length, ...weeklyDraft.meals);
   lunchSelection = weeklyDraft.lunchSelection;
   additions = [];
+  dismissedRecs = [];
   checked = {};
   eaten = {};
   lunchDone = {};
@@ -457,8 +550,35 @@ function swapMeal(i) {
 function toggleLunch(i,v){lunchDone[i]=v;persistState()}
 function shopView(){let extra=additions.flatMap(r=>r.shop.map(x=>({name:x,id:'coach-'+r.id+'-'+x.toLowerCase().replace(/[^a-z0-9]/g,''),group:'COACH ADDITIONS'})));let groups=groceryGroups().map(([g,...items])=>`<div class="shopgroup"><h4>${esc(g)}</h4>${items.map(it=>{let id=it.toLowerCase().replace(/[^a-z0-9]/g,'');return `<label class="shopitem ${checked[id]?'done':''}"><input type="checkbox" ${checked[id]?'checked':''} onchange="toggleShop('${id}')"><span>${esc(it)}</span></label>`}).join('')}</div>`).join('');return `<div class="section-head"><div><h3>Grocery run</h3><p>Grouped by meal · check off as you shop</p></div><button class="btn light" onclick="window.print()">Print list</button></div><div class="panel"><div class="stats"><div class="stat"><strong>Walmart</strong><span>pantry, grains, dairy, frozen & everyday produce</span></div><div class="stat"><strong>Tom Thumb</strong><span>seafood, specialty produce & meat cuts</span></div><div class="stat"><strong>${Object.values(checked).filter(Boolean).length}</strong><span>items checked</span></div><div class="stat"><strong>${groceryGroups().reduce((n,g)=>n+g.length-1,0)+extra.length}</strong><span>listed items</span></div></div><div class="shopping">${groups}</div>${extra.length?`<div class="section-head"><div><h3>Coach additions</h3><p>Added automatically from your selected recommendations</p></div></div><div class="shopping">${extra.map(x=>`<label class="shopitem ${checked[x.id]?'done':''}"><input type="checkbox" ${checked[x.id]?'checked':''} onchange="toggleShop('${x.id}')"><span>${x.name}</span></label>`).join('')}</div>`:''}<div class="note">Store assignments are planning defaults. Prices and availability are not live-checked; pantry inventory and retailer ordering are not connected.</div></div>`}
 function exportShopping(){let rows=[];groceryGroups().forEach(([g,...items])=>{rows.push(g);items.forEach(x=>rows.push((checked[x.toLowerCase().replace(/[^a-z0-9]/g,'')]?'[x] ':'[ ] ')+x))});additions.forEach(r=>{rows.push('COACH ADDITIONS');r.shop.forEach(x=>rows.push('[ ] '+x))});let blob=new Blob([rows.join('\n')],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='family-fuel-shopping-list.txt';a.click();URL.revokeObjectURL(url);showToast('Shopping list exported.')}
-function addRec(id){let r=recs.find(x=>x.id===id);if(r&&!additions.some(x=>x.id===id)){additions.push(r);persistState();showToast('Added to projected plan and shopping list');render()}}
-function removeRec(id){additions=additions.filter(x=>x.id!==id);persistState();render()}
+function addRec(id) {
+  const rec = recs.find(item => item.id === id);
+  if (!rec || additions.some(item => item.id === id) || dismissedRecs.includes(id)) return;
+  additions.push(rec);
+  persistState();
+  render();
+  showToast('Added to your plan and shopping list.');
+}
+
+function removeRec(id) {
+  additions = additions.filter(item => item.id !== id);
+  persistState();
+  render();
+}
+
+function dismissRec(id) {
+  if (!recs.some(item => item.id === id) || dismissedRecs.includes(id) ||
+      additions.some(item => item.id === id)) return;
+  dismissedRecs.push(id);
+  persistState();
+  render();
+  showToast('Suggestion dismissed.');
+}
+
+function restoreDismissedRecs() {
+  dismissedRecs = [];
+  persistState();
+  render();
+}
 function toggleShop(id){checked[id]=!checked[id];persistState();render()}
 function markEaten(i){eaten[i]=!eaten[i];persistState();showToast(eaten[i]?'Marked as eaten':'Eaten status removed');closeModal();render()}
 function render(){document.getElementById('weekLabel').textContent=weekLabel(weekStart);document.getElementById('main').innerHTML=current==='menu'?menuView():current==='coach'?coachView():current==='recipes'?recipeView():current==='history'?historyView():shopView();document.querySelectorAll('.tab,.bottomnav button').forEach(b=>b.classList.toggle('active',b.dataset.view===current))}
@@ -507,9 +627,10 @@ function savePastWeek() {
 function recurringGaps(records) {
   const recent = [...records].sort((a, b) => b.week.localeCompare(a.week)).slice(0, 4);
   if (recent.length < 2) return [];
-  const counts = nutrientTargets.map(() => 0);
+  const commonCount = Math.min(...recent.map(record => record.coverage.length));
+  const counts = Array.from({length: commonCount}, () => 0);
   for (const record of recent) {
-    record.coverage.map((value, i) => ({value, i}))
+    record.coverage.slice(0, commonCount).map((value, i) => ({value, i}))
       .sort((a, b) => a.value - b.value).slice(0, 3)
       .forEach(({i}) => counts[i]++);
   }
@@ -529,23 +650,27 @@ function historyView() {
   const priorities = recurringGaps(records.filter(record => !record.importedWithUnknowns));
   const previous = records[1];
   const score = coverageScore(currentRecord.coverage);
+  const commonCount = previous ? Math.min(previous.coverage.length, currentRecord.coverage.length) : 0;
+  const scoreChange = previous ? coverageScore(currentRecord.coverage.slice(0, commonCount)) -
+    coverageScore(previous.coverage.slice(0, commonCount)) : 0;
   const comparison = previous ? `<details open><summary>Compare with ${weekLabel(previous.week)}</summary>
     <div style="overflow-x:auto"><table style="width:100%;text-align:right"><thead><tr><th scope="col" style="text-align:left">Nutrient</th><th scope="col">Previous</th><th scope="col">Current</th><th scope="col">Change</th></tr></thead>
     <tbody>${nutrientTargets.map(([label], i) => `<tr><th scope="row" style="text-align:left">${label}</th>
-      <td>${esc(formatCoverage(previous.coverage[i]))}%</td><td>${esc(formatCoverage(currentRecord.coverage[i]))}%</td>
-      <td>${signedDifference(currentRecord.coverage[i] - previous.coverage[i])} pp</td></tr>`).join('')}</tbody></table></div></details>` :
+      <td>${i < commonCount ? esc(formatCoverage(previous.coverage[i])) + '%' : '—'}</td><td>${esc(formatCoverage(currentRecord.coverage[i]))}%</td>
+      <td>${i < commonCount ? signedDifference(currentRecord.coverage[i] - previous.coverage[i]) + ' pp' : '—'}</td></tr>`).join('')}</tbody></table></div></details>` :
     '<p>Your first comparison appears after you start a new week. The app saves the outgoing plan at that point.</p>';
   return `<div class="section-head"><div><h3>Weekly history</h3><p>Compare planned-food coverage on this device.</p></div></div>
     <div class="panel"><p><strong>${esc(formatCoverage(score))} / 100</strong> for ${weekLabel(weekStart)}
-    ${previous ? ` · ${signedDifference(score - coverageScore(previous.coverage))} points since the previous plan` : ''}</p>
+    ${previous ? ` · ${signedDifference(scoreChange)} points on ${commonCount} shared nutrients` : ''}</p>
     ${comparison}
+    ${previous && commonCount < nutrientTargets.length ? '<p>The previous plan tracked fewer nutrients. Score changes use only the nutrients measured in both weeks.</p>' : ''}
     <h4>Patterns to use next week</h4>
     ${priorities.length ? `<ul>${priorities.map(({i, count}) =>
       `<li><strong>${nutrientTargets[i][0]}</strong> was among the three lowest nutrients in ${count} recent plans.</li>`).join('')}</ul>
       <p>Sunday drafts give these nutrients extra weight when choosing dinners.</p>` :
     '<p>Recurring gaps appear once two comparable plans have a nutrient among their three lowest.</p>'}
     ${records.some(record => record.importedWithUnknowns) ? '<p>Plans with incomplete imported nutrition are excluded from trend priorities.</p>' : ''}
-    ${weekHistory.length ? `<h4>Past plans</h4>${weekHistory.map(record => `<details><summary>${weekLabel(record.week)} · ${esc(formatCoverage(coverageScore(record.coverage)))} / 100${record.importedWithUnknowns ? ' · partial data' : ''}</summary>
+    ${weekHistory.length ? `<h4>Past plans</h4>${weekHistory.map(record => `<details><summary>${weekLabel(record.week)} · ${esc(formatCoverage(coverageScore(record.coverage)))} / 100 · ${record.coverage.length} nutrients${record.importedWithUnknowns ? ' · partial data' : ''}</summary>
       <ul>${record.coverage.map((value, i) => `<li>${nutrientTargets[i][0]} · ${esc(formatCoverage(value))}%</li>`).join('')}</ul></details>`).join('')}` : ''}
     </div>`;
 }
