@@ -18,6 +18,13 @@ Upload the *contents* of this folder to a static web host that serves HTTPS (for
 ## Weekly plans
 Open the app on Sunday at or after 8 a.m. device time to preview the upcoming Monday’s plan. The draft rotates through the built-in catalog and uses the planned-food score to select five dinners alongside four rotating quick lunches. Starting the draft replaces the active menu and clears its checkmarks and coach additions. This feature runs while the app is open, including offline once the app shell is cached.
 
+## Imports and history
+The Recipes tab imports public recipe pages with Recipe JSON-LD and Pinterest Pins that expose an original recipe link. Review the original quantities and serving count before saving. Imported dinners link back to the publisher for the method. Only publisher per-serving protein and fiber values are currently used for imported dinners. Library entries and history stay in this browser.
+
+Starting a new plan records the outgoing week’s score and nutrient coverage in History. The planner gives extra weight to nutrients that were among the three lowest in at least two recent plans with comparable data.
+
+The import API runs separately on Render as `family-fuel-recipe-import`, using `python3 recipe_import.py` and the `/health` endpoint. The existing app remains on the static site. Imports need internet access.
+
 ## Important current limitations
 - The app still stores changes in this browser's local storage; there is no account or cross-device sync.
 - Grocery prices and retailer ordering are not connected.

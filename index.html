@@ -12,8 +12,8 @@
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 </head><body><div class="shell"><header class="top"><div class="brand"><div class="mark">✳</div><div><h1>Family Fuel</h1><small>Eat well. Grow well. Enjoy the table.</small></div></div><div class="week">WEEK OF<br><strong id="weekLabel"></strong></div></header>
 <section class="hero"><div><div class="eyebrow">Your family table, thoughtfully planned</div><h2>Good food, big nourishment.</h2><p>A colorful week built around seafood, plants, whole grains and deeply satisfying flavors. Planned for seven at dinner and quick midday meals.</p></div></section>
-<nav class="tabs" id="tabs"><button class="tab active" data-view="menu">This week</button><button class="tab" data-view="coach">Nutrient coach</button><button class="tab" data-view="recipes">Recipes</button><button class="tab" data-view="shopping">Shopping list</button></nav>
-<div class="panel" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px"><button class="btn light" onclick="saveWeek()">Save changes</button><button class="btn outline" onclick="showInstallHelp()">Add to Home Screen</button><button class="btn light" onclick="exportShopping()">Export groceries</button><button class="btn outline" onclick="resetWeek()">Reset plan</button><span id="saveStatus" style="font-size:12px;color:var(--muted);margin-left:auto">Changes save on this device</span></div><main id="main"></main></div><nav class="bottomnav"><button data-view="menu"><b>▦</b>Menu</button><button data-view="coach"><b>◉</b>Nutrition</button><button data-view="recipes"><b>♨</b>Recipes</button><button data-view="shopping"><b>✓</b>Groceries</button></nav><div id="modal" class="hide"></div><div id="toast" class="toast hide"></div>
+<nav class="tabs" id="tabs"><button class="tab active" data-view="menu">This week</button><button class="tab" data-view="coach">Nutrient coach</button><button class="tab" data-view="recipes">Recipes</button><button class="tab" data-view="shopping">Shopping list</button><button class="tab" data-view="history">History</button></nav>
+<div class="panel" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px"><button class="btn light" onclick="saveWeek()">Save changes</button><button class="btn outline" onclick="showInstallHelp()">Add to Home Screen</button><button class="btn light" onclick="exportShopping()">Export groceries</button><button class="btn outline" onclick="resetWeek()">Reset plan</button><span id="saveStatus" style="font-size:12px;color:var(--muted);margin-left:auto">Changes save on this device</span></div><main id="main"></main></div><nav class="bottomnav"><button data-view="menu"><b>▦</b>Menu</button><button data-view="coach"><b>◉</b>Nutrition</button><button data-view="recipes"><b>♨</b>Recipes</button><button data-view="shopping"><b>✓</b>Groceries</button><button data-view="history"><b>◷</b>History</button></nav><div id="modal" class="hide"></div><div id="toast" class="toast hide"></div>
 <script>
 const meals=[
 {day:'MON',date:'Nov 16',name:'Miso-glazed salmon bowls',cuisine:'JAPANESE-INSPIRED',time:'35 min',img:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=900',desc:'Salmon, brown rice, edamame, cucumber, avocado and quick-pickled carrot.',tags:['Omega-3','Fiber','Vitamin D'],cost:'$4.10 / serving',ingredients:['2.5 lb salmon','4 cups dry brown rice','2 cups shelled edamame','2 cucumbers','3 carrots','2 avocados','white miso, honey, rice vinegar, tamari'],steps:['Cook rice according to package directions.','Whisk ⅓ cup miso, 3 tbsp honey and 2 tbsp tamari. Brush over salmon.','Roast salmon at 425°F for 12–15 minutes, until it flakes and reaches 145°F.','Quick-pickle shaved carrot in rice vinegar, a pinch of salt and sugar for 15 minutes.','Serve salmon over rice with edamame, cucumber, avocado and pickled carrot.']},
@@ -171,6 +171,12 @@ function estimateNutrients(portions) {
 }
 
 function dinnerNutrients(meal) {
+  if (meal.imported) {
+    return nutrientTargets.map(([name]) =>
+      name === 'Protein' ? meal.nutrition?.proteinContent || 0 :
+      name === 'Fiber' ? meal.nutrition?.fiberContent || 0 : 0
+    );
+  }
   return estimateNutrients(meal.ingredients.flatMap(line => {
     const portion = Object.hasOwn(dinnerPortions, line) ? dinnerPortions[line] : null;
     return portion ? [portion] : [];
@@ -235,13 +241,14 @@ function coachView() {
   const rows = gaps.map(({name, value}) => `<div class="nutrient">
     <span>${name}</span><div class="bar"><div class="fill" style="width:${value}%"></div></div>
     <strong>${esc(formatCoverage(value))}%</strong></div>`).join('');
-  const unmatched = [...new Set(meals.flatMap(meal =>
+  const unmatched = [...new Set(meals.filter(meal => !meal.imported).flatMap(meal =>
     meal.ingredients.filter(line => !Object.hasOwn(dinnerPortions, line))))];
-  const perMeal = [...meals.map(meal => [meal.name, dinnerNutrients(meal)]),
+  const perMeal = [...meals.map(meal => [meal.name, dinnerNutrients(meal), meal]),
     ...lunchSelection.map(i => [allLunches[i][0], estimateNutrients(lunchPortions[i])])]
-    .map(([name, amounts]) => `<details><summary>${esc(name)}</summary><ul>
+    .map(([name, amounts, meal]) => `<details><summary>${esc(name)}</summary><ul>
       ${nutrientTargets.map(([label, target], i) =>
-        `<li>${label} · ${Math.round(amounts[i] / target * 100)}% daily reference per serving</li>`).join('')}
+        `<li>${label} · ${meal?.imported && !Object.hasOwn(meal.nutrition || {}, i === 0 ? 'proteinContent' : i === 1 ? 'fiberContent' : '') ?
+          'unscored' : Math.round(amounts[i] / target * 100) + '% daily reference per serving'}</li>`).join('')}
     </ul></details>`).join('');
   return `<div class="section-head"><div><h3>Nutrient coverage</h3><p>Estimated contribution from the meals in this plan</p></div></div>
     <div class="panel"><div class="stat" aria-live="polite"><strong>${esc(formatCoverage(score))} / 100</strong><span>Weekly planned-food score</span></div>
@@ -249,6 +256,7 @@ function coachView() {
     <div class="note">The score averages eight nutrient percentages, capping each at 100%. It uses seven days of FDA label Daily Values as a shared reference. Dinners count for seven, lunches assume an average of 3.5 servings across seven people, and selected additions count as planned. Estimates use USDA food matches and approximate portions. Unmatched ingredients and unplanned meals are excluded. Individual needs and actual intake vary.</div>
     ${unmatched.length ? `<details><summary>${unmatched.length} ingredient entries excluded from the estimate</summary>
       <ul>${unmatched.map(line => `<li>${esc(line)}</li>`).join('')}</ul></details>` : ''}
+    ${meals.some(meal => meal.imported) ? '<p>Imported dinners add only verified publisher protein and fiber when available. Other nutrients for those dinners are omitted from the totals.</p>' : ''}
     <details><summary>Estimates by meal</summary>${perMeal}</details></div>
     <div class="section-head"><div><h3>Nutrient Gap Coach</h3><p>Suggestions are ordered by contribution to the three lowest nutrients.</p></div></div>
     <div class="coach">${available.map(({rec, projected}) => `<article class="rec">
@@ -260,10 +268,10 @@ function coachView() {
     <button class="link" onclick="removeRec('${rec.id}')">Undo</button></div>`).join('')}</div>` : ''}`;
 }
 
-function recipeView(){return `<div class="section-head"><div><h3>Recipe collection</h3><p>Complete dinner recipes scaled for seven</p></div></div><div class="panel">${meals.map((m,i)=>`<div class="lunch">${m.img ? `<img src="${m.img}" alt="">` : ''}<div style="flex:1"><h4>${m.name}</h4><p>${m.time} · ${m.cuisine}</p></div><button class="btn light" onclick="openRecipe(${i})">Open</button></div>`).join('')}</div><div class="note">Cooking temperatures and times are included in the steps. Use a food thermometer for doneness; poultry 165°F, fish 145°F and whole cuts/ground meats according to safe handling guidance.</div>`}
+function recipeView(){return `${importPanel()}${libraryView()}<div class="section-head"><div><h3>Recipe collection</h3><p>Complete dinner recipes scaled for seven</p></div></div><div class="panel">${meals.map((m,i)=>`<div class="lunch">${m.img ? `<img src="${m.img}" alt="">` : ''}<div style="flex:1"><h4>${esc(m.name)}</h4><p>${esc(m.time)} · ${esc(m.cuisine)}</p></div><button class="btn light" onclick="openRecipe(${i})">Open</button></div>`).join('')}</div><div class="note">Cooking temperatures and times are included in the steps. Use a food thermometer for doneness; poultry 165°F, fish 145°F and whole cuts/ground meats according to safe handling guidance.</div>`}
 
-function render(){document.getElementById('weekLabel').textContent=weekLabel(weekStart);document.getElementById('main').innerHTML=current==='menu'?menuView():current==='coach'?coachView():current==='recipes'?recipeView():shopView();document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===current))}
-function openRecipe(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><span class="pill">${m.cuisine} · SERVES 7</span><h3 style="font:700 27px Georgia;margin:12px 0">${m.name}</h3><div class="recipe">${m.img ? `<img src="${m.img}" alt="">` : ''}<div><b>Ingredients</b><ul>${m.ingredients.map(x=>`<li>${x}</li>`).join('')}</ul></div></div><h4>Method</h4><ol>${m.steps.map(x=>`<li>${x}</li>`).join('')}</ol><p style="font-size:12px;color:var(--muted)">Estimated cost: ${m.cost}. Nutrient tags: ${m.tags.join(' · ')}.</p><button class="btn" onclick="markEaten(${i})">${eaten[i]?'✓ Confirmed eaten':'Mark as eaten'}</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
+function render(){document.getElementById('weekLabel').textContent=weekLabel(weekStart);document.getElementById('main').innerHTML=current==='menu'?menuView():current==='coach'?coachView():current==='recipes'?recipeView():current==='history'?historyView():shopView();document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===current))}
+function openRecipe(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><span class="pill">${m.cuisine} · SERVES 7</span><h3 style="font:700 27px Georgia;margin:12px 0">${esc(m.name)}</h3><div class="recipe">${m.img ? `<img src="${m.img}" alt="">` : ''}<div><b>Ingredients</b><ul>${m.ingredients.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>${m.imported ? sourceLink(m) + '<p>Review quantities and follow the source cooking directions.</p>' : `<h4>Method</h4><ol>${m.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`}<p style="font-size:12px;color:var(--muted)">${m.imported ? 'Imported recipe · partial nutrient data' : `Estimated cost: ${m.cost}. Nutrient tags: ${m.tags.join(' · ')}.`}</p><button class="btn" onclick="markEaten(${i})">${eaten[i]?'✓ Confirmed eaten':'Mark as eaten'}</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
 function closeModal(){document.getElementById('modal').classList.add('hide')}
 function markEaten(i){eaten[i]=!eaten[i];showToast(eaten[i]?'Marked as eaten':'Eaten status removed');closeModal();render()}
 function addRec(id){let r=recs.find(x=>x.id===id);if(!additions.some(x=>x.id===id)){additions.push(r);showToast('Added to projected plan and shopping list');render()}}
@@ -333,6 +341,8 @@ function draftWeek(week, previousMeals, previousLunches) {
   const minimumNew = Math.min(2, newRecipes);
   const lunchTotals = lunchSelection.map(i => estimateNutrients(lunchPortions[i]));
   const dinnerTotals = dinnerCatalog.map(dinnerNutrients);
+  const comparable = [...weekHistory, snapshotWeek()].filter(record => !record.importedWithUnknowns);
+  const priorities = recurringGaps(comparable);
   let best = null;
   for (let mask = 0; mask < 2 ** dinnerCatalog.length; mask++) {
     const choices = dinnerCatalog.map((_, i) => i).filter(i => mask & (1 << i));
@@ -341,11 +351,14 @@ function draftWeek(week, previousMeals, previousLunches) {
       choices.reduce((sum, i) => sum + dinnerTotals[i][axis], 0) +
       lunchTotals.reduce((sum, amounts) => sum + amounts[axis] / 2, 0)
     );
-    const score = coverageScore(weeklyCoverage(totals));
-    if (!best || score > best.score) best = {choices, score};
+    const coverage = weeklyCoverage(totals);
+    const score = coverageScore(coverage);
+    const priorityBonus = priorities.reduce((sum, {i}) => sum + coverage[i], 0) / 8;
+    const ranking = score + priorityBonus;
+    if (!best || ranking > best.ranking) best = {choices, score, ranking};
   }
   return {
-    week, lunchSelection, score: best.score,
+    week, lunchSelection, score: best.score, priorities,
     meals: scheduleDinners(best.choices.map(i => dinnerCatalog[i]), week),
   };
 }
@@ -397,17 +410,18 @@ function weeklyDraftView() {
   return `<section class="panel" style="margin-top:16px">
     <h3>New plan for ${weekLabel(weeklyDraft.week)}</h3>
     <p>Five dinners and four quick lunches · projected score <strong>${esc(formatCoverage(weeklyDraft.score))} / 100</strong></p>
+    ${weeklyDraft.priorities.length ? `<p>Prioritized from recent weeks · ${weeklyDraft.priorities.map(({i}) => nutrientTargets[i][0]).join(', ')}</p>` : ''}
     <details><summary>Preview meals</summary><h4>Dinners</h4><ol>
       ${weeklyDraft.meals.map(meal => `<li>${esc(meal.name)}</li>`).join('')}
     </ol><h4>Lunches</h4><ul>
       ${weeklyDraft.lunchSelection.map(i => `<li>${esc(allLunches[i][0])}</li>`).join('')}
-    </ul></details><p>Starting this plan replaces the menu and clears this week’s checkmarks and coach additions.</p>
+    </ul></details><p>Starting this plan saves the outgoing week’s nutrient scores in History and starts a new checklist.</p>
     <button class="btn" onclick="startWeeklyPlan()">Start this plan</button>
   </section>`;
 }
 
 function startWeeklyPlan() {
-  if (!weeklyDraft) return;
+  if (!weeklyDraft || !savePastWeek()) return;
   weekStart = weeklyDraft.week;
   meals.splice(0, meals.length, ...weeklyDraft.meals);
   lunchSelection = weeklyDraft.lunchSelection;
@@ -426,7 +440,7 @@ function resetWeek(){if(!confirm('Clear this saved plan and its checkmarks from 
 function menuView(){return `${weeklyDraftView()}<div class="section-head"><div><h3>Dinner, handled.</h3><p>Five flavor-forward dinners · serves 7 · tap a recipe or edit a meal</p></div></div><div class="grid">${meals.map((m,i)=>`<article class="meal">${m.img ? `<img src="${m.img}" alt="${esc(m.name)}" loading="lazy">` : ''}<div class="meal-body"><div class="meal-top"><span class="pill">${m.day} · ${m.date}</span><span style="font-size:11px;color:var(--muted)">${m.time}</span></div><h4>${esc(m.name)}</h4><p>${esc(m.desc)}</p><div class="meal-foot"><span>${m.cuisine}</span><span>${eaten[i]?'✓ Eaten':'Planned'}</span></div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" onclick="openRecipe(${i})">View recipe</button><button class="btn light" onclick="openEditor(${i})">Edit</button><button class="btn outline" onclick="swapMeal(${i})">Swap</button></div></div></article>`).join('')}</div><div class="section-head"><div><h3>Fast lunches</h3><p>Four low-effort ideas · serves 3–4 · tick when made</p></div></div><div class="panel">${lunchSelection.map((id,i)=>{const l=allLunches[id];return `<div class="lunch">${l[3]?`<img src="${l[3]}" alt="" loading="lazy">`: ''}<div style="flex:1"><h4>${l[0]}</h4><p>${l[1]}</p><small style="color:var(--green)">${l[2]} · quick assembly</small></div><label style="font-size:12px;white-space:nowrap"><input type="checkbox" ${lunchDone[i]?'checked':''} onchange="toggleLunch(${i},this.checked)"> Made</label></div>`}).join('')}</div><div class="note">The Nutrient Coach estimates coverage from the meals and additions in this plan.</div>`}
 function openEditor(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><h3 style="font:700 25px Georgia">Edit ${m.day} dinner</h3><label>Meal name<input id="editName" value="${esc(m.name)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Description<textarea id="editDesc" style="width:100%;min-height:76px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.desc)}</textarea></label><label>Cuisine<input id="editCuisine" value="${esc(m.cuisine)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Prep/cook time<input id="editTime" value="${esc(m.time)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Ingredients (one per line)<textarea id="editIngredients" style="width:100%;min-height:120px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.ingredients.join('\n'))}</textarea></label><label>Cooking steps (one per line)<textarea id="editSteps" style="width:100%;min-height:140px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.steps.join('\n'))}</textarea></label><button class="btn" onclick="saveMealEdit(${i})">Save meal</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function saveMealEdit(i){let m=meals[i];m.name=document.getElementById('editName').value.trim()||m.name;m.desc=document.getElementById('editDesc').value.trim();m.cuisine=document.getElementById('editCuisine').value.trim();m.time=document.getElementById('editTime').value.trim();m.ingredients=document.getElementById('editIngredients').value.split('\n').map(x=>x.trim()).filter(Boolean);m.steps=document.getElementById('editSteps').value.split('\n').map(x=>x.trim()).filter(Boolean);closeModal();persistState();render();showToast('Meal updated.')}
+function saveMealEdit(i){let m=meals[i];m.name=document.getElementById('editName').value.trim()||m.name;m.desc=document.getElementById('editDesc').value.trim();m.cuisine=document.getElementById('editCuisine').value.trim();m.time=document.getElementById('editTime').value.trim();const changedIngredients=document.getElementById('editIngredients').value.split('\n').map(x=>x.trim()).filter(Boolean);if(m.imported&&JSON.stringify(changedIngredients)!==JSON.stringify(m.ingredients))m.nutrition={};m.ingredients=changedIngredients;m.steps=document.getElementById('editSteps').value.split('\n').map(x=>x.trim()).filter(Boolean);closeModal();persistState();render();showToast('Meal updated.')}
 function swapMeal(i) {
   const meal = meals[i];
   const inUse = new Set(meals.map(item => item.name));
@@ -447,7 +461,266 @@ function addRec(id){let r=recs.find(x=>x.id===id);if(r&&!additions.some(x=>x.id=
 function removeRec(id){additions=additions.filter(x=>x.id!==id);persistState();render()}
 function toggleShop(id){checked[id]=!checked[id];persistState();render()}
 function markEaten(i){eaten[i]=!eaten[i];persistState();showToast(eaten[i]?'Marked as eaten':'Eaten status removed');closeModal();render()}
-function render(){document.getElementById('weekLabel').textContent=weekLabel(weekStart);document.getElementById('main').innerHTML=current==='menu'?menuView():current==='coach'?coachView():current==='recipes'?recipeView():shopView();document.querySelectorAll('.tab,.bottomnav button').forEach(b=>b.classList.toggle('active',b.dataset.view===current))}
+function render(){document.getElementById('weekLabel').textContent=weekLabel(weekStart);document.getElementById('main').innerHTML=current==='menu'?menuView():current==='coach'?coachView():current==='recipes'?recipeView():current==='history'?historyView():shopView();document.querySelectorAll('.tab,.bottomnav button').forEach(b=>b.classList.toggle('active',b.dataset.view===current))}
+const HISTORY_KEY = 'familyFuel.history.v1';
+const LIBRARY_KEY = 'familyFuel.recipes.v1';
+let weekHistory = readCollection(HISTORY_KEY);
+let recipeLibrary = readCollection(LIBRARY_KEY);
+let pendingRecipe = null;
+
+function readCollection(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
+
+function storeCollection(key, items) {
+  try {
+    localStorage.setItem(key, JSON.stringify(items));
+    return true;
+  } catch {
+    showToast('Storage is full or unavailable on this device.');
+    return false;
+  }
+}
+
+function snapshotWeek() {
+  return {
+    week: weekStart,
+    coverage: weeklyCoverage(weeklyNutrients(additions)),
+    importedWithUnknowns: meals.some(meal => meal.imported),
+  };
+}
+
+function savePastWeek() {
+  const record = snapshotWeek();
+  const updated = [...weekHistory.filter(item => item.week !== record.week), record]
+    .sort((a, b) => b.week.localeCompare(a.week));
+  if (!storeCollection(HISTORY_KEY, updated)) return false;
+  weekHistory = updated;
+  return true;
+}
+
+function recurringGaps(records) {
+  const recent = [...records].sort((a, b) => b.week.localeCompare(a.week)).slice(0, 4);
+  if (recent.length < 2) return [];
+  const counts = nutrientTargets.map(() => 0);
+  for (const record of recent) {
+    record.coverage.map((value, i) => ({value, i}))
+      .sort((a, b) => a.value - b.value).slice(0, 3)
+      .forEach(({i}) => counts[i]++);
+  }
+  return counts.map((count, i) => ({count, i}))
+    .filter(({count}) => count >= 2)
+    .sort((a, b) => b.count - a.count || recent[0].coverage[a.i] - recent[0].coverage[b.i])
+    .slice(0, 3);
+}
+
+function signedDifference(value) {
+  return (value >= 0.05 ? '+' : '') + (Math.abs(value) < 0.05 ? 0 : value).toFixed(1);
+}
+
+function historyView() {
+  const currentRecord = snapshotWeek();
+  const records = [currentRecord, ...weekHistory.filter(item => item.week !== weekStart)];
+  const priorities = recurringGaps(records.filter(record => !record.importedWithUnknowns));
+  const previous = records[1];
+  const score = coverageScore(currentRecord.coverage);
+  const comparison = previous ? `<details open><summary>Compare with ${weekLabel(previous.week)}</summary>
+    <div style="overflow-x:auto"><table style="width:100%;text-align:right"><thead><tr><th scope="col" style="text-align:left">Nutrient</th><th scope="col">Previous</th><th scope="col">Current</th><th scope="col">Change</th></tr></thead>
+    <tbody>${nutrientTargets.map(([label], i) => `<tr><th scope="row" style="text-align:left">${label}</th>
+      <td>${esc(formatCoverage(previous.coverage[i]))}%</td><td>${esc(formatCoverage(currentRecord.coverage[i]))}%</td>
+      <td>${signedDifference(currentRecord.coverage[i] - previous.coverage[i])} pp</td></tr>`).join('')}</tbody></table></div></details>` :
+    '<p>Your first comparison appears after you start a new week. The app saves the outgoing plan at that point.</p>';
+  return `<div class="section-head"><div><h3>Weekly history</h3><p>Compare planned-food coverage on this device.</p></div></div>
+    <div class="panel"><p><strong>${esc(formatCoverage(score))} / 100</strong> for ${weekLabel(weekStart)}
+    ${previous ? ` · ${signedDifference(score - coverageScore(previous.coverage))} points since the previous plan` : ''}</p>
+    ${comparison}
+    <h4>Patterns to use next week</h4>
+    ${priorities.length ? `<ul>${priorities.map(({i, count}) =>
+      `<li><strong>${nutrientTargets[i][0]}</strong> was among the three lowest nutrients in ${count} recent plans.</li>`).join('')}</ul>
+      <p>Sunday drafts give these nutrients extra weight when choosing dinners.</p>` :
+    '<p>Recurring gaps appear once two comparable plans have a nutrient among their three lowest.</p>'}
+    ${records.some(record => record.importedWithUnknowns) ? '<p>Plans with incomplete imported nutrition are excluded from trend priorities.</p>' : ''}
+    ${weekHistory.length ? `<h4>Past plans</h4>${weekHistory.map(record => `<details><summary>${weekLabel(record.week)} · ${esc(formatCoverage(coverageScore(record.coverage)))} / 100${record.importedWithUnknowns ? ' · partial data' : ''}</summary>
+      <ul>${record.coverage.map((value, i) => `<li>${nutrientTargets[i][0]} · ${esc(formatCoverage(value))}%</li>`).join('')}</ul></details>`).join('')}` : ''}
+    </div>`;
+}
+
+const IMPORT_ENDPOINT = 'https://family-fuel-recipe-import.onrender.com/import';
+
+function importPanel() {
+  return `<section class="panel"><h3>Import a recipe</h3>
+    <form onsubmit="fetchRecipe(event)">
+      <label for="recipeLink">Pinterest Pin or recipe page</label>
+      <input id="recipeLink" name="recipeLink" type="url" placeholder="https://pin.it/…" maxlength="2048" required
+        style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;margin:8px 0">
+      <button class="btn" type="submit">Import link</button>
+      <button class="btn light" type="button" onclick="showRecipeReview()">Enter by hand</button>
+      <p id="importStatus" role="status"></p>
+    </form>
+    <div id="recipeReview"></div></section>`;
+}
+
+async function fetchRecipe(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = form.querySelector('[type=submit]');
+  const status = form.querySelector('[role=status]');
+  button.disabled = true;
+  status.textContent = 'Reading the recipe page…';
+  try {
+    const response = await fetch(IMPORT_ENDPOINT, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({url: form.elements.recipeLink.value.trim()}),
+      signal: AbortSignal.timeout(100000),
+    });
+    const draft = await response.json();
+    if (!response.ok) throw new Error(draft.error || 'The recipe could not be imported.');
+    if (!form.isConnected) return;
+    status.textContent = 'Recipe found. Check the ingredients and serving count before saving.';
+    showRecipeReview(draft);
+  } catch (error) {
+    status.textContent = error instanceof TypeError || error.name === 'TimeoutError'
+      ? 'The importer could not reach the recipe. Try the original recipe link or enter it by hand.'
+      : error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function safeRecipeUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && !url.username && !url.password ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+
+function estimateServings(value) {
+  const match = String(value || '').match(/^\s*(?:\[\s*['"])?(\d+)(?:\s+(?:servings?|portions?))?(?:['"]\s*\])?\s*$/i);
+  return match && Number(match[1]) > 0 ? Number(match[1]) : '';
+}
+
+function displayRecipeTime(value) {
+  const match = (value || '').match(/^PT(?:(\d+)H)?(?:(\d+)M)?$/);
+  return match ? [match[1] && match[1] + ' hr', match[2] && match[2] + ' min'].filter(Boolean).join(' ') : '';
+}
+
+function showRecipeReview(draft = {}) {
+  pendingRecipe = draft;
+  const source = safeRecipeUrl(draft.url);
+  document.getElementById('recipeReview').innerHTML = `<form onsubmit="saveImportedRecipe(event)">
+    <h4>Review recipe</h4>
+    <label>Name <input name="name" value="${esc(draft.name || '')}" maxlength="150" required></label>
+    <label>Original servings <input name="servings" type="number" min="1" max="100" step="1" value="${estimateServings(draft.servings)}" required></label>
+    <p><label>Original recipe link <input name="source" type="url" maxlength="2048" value="${esc(source)}"></label></p>
+    <label>Ingredients for the original servings, one per line
+      <textarea name="ingredients" required maxlength="12000" rows="8" style="display:block;width:100%">${esc((draft.ingredients || []).join('\n'))}</textarea>
+    </label><p>Measured quantities will be scaled to seven. Check ranges, package sizes, and unmeasured ingredients.</p>
+    <button class="btn" type="submit">Save to recipe library</button>
+  </form>`;
+}
+
+const recipeFractions = {'¼':'1/4','½':'1/2','¾':'3/4','⅓':'1/3','⅔':'2/3',
+  '⅛':'1/8','⅜':'3/8','⅝':'5/8','⅞':'7/8','⅕':'1/5','⅖':'2/5','⅗':'3/5','⅘':'4/5','⅙':'1/6','⅚':'5/6'};
+const ingredientAmount = '(?:\\d+\\s+\\d+/\\d+|\\d+/\\d+|\\d+(?:[.,]\\d+)?|[.,]\\d+)';
+const ingredientQuantity = new RegExp('^(' + ingredientAmount + ')(?:\\s*[-–—]\\s*(' + ingredientAmount + '))?(?=\\s|$)');
+
+function scaleIngredient(line, factor) {
+  const normalized = line.replace(/[¼½¾⅓⅔⅛⅜⅝⅞⅕⅖⅗⅘⅙⅚]/g, (symbol, i) =>
+    (/\d/.test(line[i - 1] || '') ? ' ' : '') + recipeFractions[symbol]);
+  const match = normalized.match(ingredientQuantity);
+  if (!match) return {line, needsReview: true};
+  const quantity = input => input.split(/\s+/).reduce((sum, part) => {
+    const [top, bottom] = part.split('/');
+    return sum + (bottom === undefined ? Number(top.replace(',', '.')) : Number(top) / Number(bottom));
+  }, 0) * factor;
+  const amounts = match.slice(1).filter(Boolean).map(quantity);
+  if (amounts.some(value => !Number.isFinite(value) || value <= 0 || value < 0.01)) return {line, needsReview: true};
+  const formatted = amounts.map(value => Number(value.toFixed(2)).toString()).join('–');
+  return {line: formatted + normalized.slice(match[0].length), needsReview: false};
+}
+
+function saveImportedRecipe(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const fields = Object.fromEntries(new FormData(form));
+  const name = fields.name.trim();
+  const servings = Number(fields.servings);
+  const source = safeRecipeUrl(fields.source);
+  const raw = fields.ingredients.split('\n').map(line => line.trim()).filter(Boolean);
+  if (!name || !raw.length || !Number.isInteger(servings) || servings < 1 || servings > 100 ||
+      (fields.source.trim() && !source)) {
+    showToast('Check the name, servings, ingredient list and HTTPS source link.');
+    return;
+  }
+  const scaled = raw.map(line => scaleIngredient(line, 7 / servings));
+  const originalUnchanged = pendingRecipe && source === safeRecipeUrl(pendingRecipe.url) &&
+    servings === estimateServings(pendingRecipe.servings) && raw.join('\n') === pendingRecipe.ingredients?.join('\n');
+  const nutrition = originalUnchanged ? pendingRecipe.nutrition || {} : {};
+  const recipe = {
+    id: crypto.randomUUID(), name, source, imported: true, cuisine: 'IMPORTED',
+    time: displayRecipeTime(pendingRecipe?.time) || 'See recipe', img: '', tags: [],
+    desc: 'Saved from your recipe library.',
+    ingredients: scaled.map(entry => entry.line),
+    reviewIngredients: scaled.filter(entry => entry.needsReview).map(entry => entry.line),
+    steps: [], nutrition,
+  };
+  const updated = [recipe, ...recipeLibrary.filter(item => source ? item.source !== source : item.id !== recipe.id)];
+  if (!storeCollection(LIBRARY_KEY, updated)) return;
+  recipeLibrary = updated;
+  pendingRecipe = null;
+  render();
+  showToast('Recipe saved and scaled to seven.');
+}
+
+function libraryView() {
+  return `<div class="section-head"><div><h3>Saved recipes</h3><p>Recipes imported on this device.</p></div></div>
+  ${recipeLibrary.length ? `<div class="panel">${recipeLibrary.map(recipe => `<div class="lunch">
+    <div style="flex:1"><h4>${esc(recipe.name)}</h4><p>${esc(recipe.time)} · serves 7</p></div>
+    <button class="btn light" onclick="openSavedRecipe('${recipe.id}')">Open</button></div>`).join('')}</div>` :
+    '<p>Imported recipes will appear here.</p>'}`;
+}
+
+function openSavedRecipe(id) {
+  const recipe = recipeLibrary.find(item => item.id === id);
+  if (!recipe) return;
+  const modal = document.getElementById('modal');
+  modal.innerHTML = `<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox">
+    <button class="close" onclick="closeModal()" aria-label="Close">×</button>
+    <h3>${esc(recipe.name)}</h3><p>Ingredients scaled to seven.</p>
+    <ul>${recipe.ingredients.map(line => `<li>${esc(line)}${recipe.reviewIngredients.includes(line) ? ' <small>· check quantity</small>' : ''}</li>`).join('')}</ul>
+    ${sourceLink(recipe)}<p>Publisher nutrition is included where available. The other nutrients are unscored.</p>
+    <form onsubmit="useSavedRecipe(event,'${id}')"><label>Replace dinner
+      <select name="day">${meals.map((meal, i) => `<option value="${i}">${meal.day} · ${esc(meal.name)}</option>`).join('')}</select>
+    </label> <button class="btn" type="submit">Add to this week</button></form></div></div>`;
+  modal.classList.remove('hide');
+}
+
+function sourceLink(recipe) {
+  const url = safeRecipeUrl(recipe.source);
+  return url ? `<p><a href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open original recipe and cooking steps</a></p>` : '';
+}
+
+function useSavedRecipe(event, id) {
+  event.preventDefault();
+  const index = Number(event.currentTarget.elements.day.value);
+  const recipe = recipeLibrary.find(item => item.id === id);
+  if (!recipe || !meals[index]) return;
+  meals[index] = {...recipe, day: meals[index].day, date: meals[index].date};
+  delete eaten[index];
+  closeModal();
+  persistState();
+  setView('menu');
+  showToast('Dinner and shopping list updated.');
+}
+
 loadState();
 if (!refreshWeeklyDraft()) render();
 window.addEventListener('focus', () => refreshWeeklyDraft());
