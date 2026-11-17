@@ -21,13 +21,13 @@ Open the app on Sunday at or after 8 a.m. device time to preview the upcoming Mo
 ## Imports and history
 The Recipes tab imports public recipe pages with Recipe JSON-LD and Pinterest Pins that expose an original recipe link. Review the original quantities and serving count before saving. Imported dinners link back to the publisher for the method. Only publisher per-serving protein and fiber values are currently used for imported dinners. Library entries and history stay in this browser.
 
-Starting a new plan records the outgoing week’s score and nutrient coverage in History. The planner gives extra weight to nutrients that were among the three lowest in at least two recent plans with comparable data.
+Starting a new plan records the outgoing week’s score and nutrient coverage in History. Week-to-week score changes use the nutrients measured in both plans. The coach shows the top three remaining food additions from a built-in catalog of 28 options and reranks them as you add, dismiss, or restore suggestions. The planner gives extra weight to nutrients that were among the three lowest in at least two recent plans with comparable data.
 
 The import API runs separately on Render as `family-fuel-recipe-import`, using `python3 recipe_import.py` and the `/health` endpoint. The existing app remains on the static site. Imports need internet access.
 
 ## Important current limitations
 - The app still stores changes in this browser's local storage; there is no account or cross-device sync.
 - Grocery prices and retailer ordering are not connected.
-- Nutrient estimates use [USDA FoodData Central SR Legacy](https://fdc.nal.usda.gov/download-datasets/) food matches and approximate portions. The weekly score averages eight percentages of seven days of [FDA Daily Values](https://www.fda.gov/food/nutrition-facts-label/daily-value-nutrition-and-supplement-facts-labels), each capped at 100%. The shared reference is for comparing plans. Unmatched ingredients and unplanned meals are excluded.
+- Nutrient estimates use [USDA FoodData Central SR Legacy](https://fdc.nal.usda.gov/download-datasets/) food matches and approximate portions. The weekly score averages 22 percentages of seven days of [FDA Daily Values](https://www.fda.gov/food/nutrition-facts-label/daily-value-nutrition-and-supplement-facts-labels), each capped at 100%. The shared reference is for comparing plans. Unmatched ingredients and unplanned meals are excluded.
 - Meal photos load from Unsplash and require internet unless previously cached by the browser.
 - Offline support caches the app shell; first launch and first cache setup require internet.
