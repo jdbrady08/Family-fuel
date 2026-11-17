@@ -10,10 +10,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Family Fuel">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-</head><body><div class="shell"><header class="top"><div class="brand"><div class="mark">✳</div><div><h1>Family Fuel</h1><small>Eat well. Grow well. Enjoy the table.</small></div></div><div class="week">WEEK OF<br><strong>November 16–22, 2026</strong></div></header>
-<section class="hero"><div><div class="eyebrow">Your family table, thoughtfully planned</div><h2>Good food, big nourishment.</h2><p>A colorful week built around seafood, plants, whole grains and deeply satisfying flavors. Planned for seven at dinner and quick midday meals.</p></div><div class="hero-stat"><strong id="variety">27</strong><span>plant foods in this plan</span></div></section>
+</head><body><div class="shell"><header class="top"><div class="brand"><div class="mark">✳</div><div><h1>Family Fuel</h1><small>Eat well. Grow well. Enjoy the table.</small></div></div><div class="week">WEEK OF<br><strong id="weekLabel"></strong></div></header>
+<section class="hero"><div><div class="eyebrow">Your family table, thoughtfully planned</div><h2>Good food, big nourishment.</h2><p>A colorful week built around seafood, plants, whole grains and deeply satisfying flavors. Planned for seven at dinner and quick midday meals.</p></div></section>
 <nav class="tabs" id="tabs"><button class="tab active" data-view="menu">This week</button><button class="tab" data-view="coach">Nutrient coach</button><button class="tab" data-view="recipes">Recipes</button><button class="tab" data-view="shopping">Shopping list</button></nav>
-<div class="panel" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px"><button class="btn light" onclick="saveWeek()">Save changes</button><button class="btn outline" onclick="showInstallHelp()">Add to Home Screen</button><button class="btn light" onclick="exportShopping()">Export groceries</button><button class="btn outline" onclick="resetWeek()">Reset sample week</button><span id="saveStatus" style="font-size:12px;color:var(--muted);margin-left:auto">Changes save on this device</span></div><main id="main"></main></div><nav class="bottomnav"><button data-view="menu"><b>▦</b>Menu</button><button data-view="coach"><b>◉</b>Nutrition</button><button data-view="recipes"><b>♨</b>Recipes</button><button data-view="shopping"><b>✓</b>Groceries</button></nav><div id="modal" class="hide"></div><div id="toast" class="toast hide"></div>
+<div class="panel" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px"><button class="btn light" onclick="saveWeek()">Save changes</button><button class="btn outline" onclick="showInstallHelp()">Add to Home Screen</button><button class="btn light" onclick="exportShopping()">Export groceries</button><button class="btn outline" onclick="resetWeek()">Reset plan</button><span id="saveStatus" style="font-size:12px;color:var(--muted);margin-left:auto">Changes save on this device</span></div><main id="main"></main></div><nav class="bottomnav"><button data-view="menu"><b>▦</b>Menu</button><button data-view="coach"><b>◉</b>Nutrition</button><button data-view="recipes"><b>♨</b>Recipes</button><button data-view="shopping"><b>✓</b>Groceries</button></nav><div id="modal" class="hide"></div><div id="toast" class="toast hide"></div>
 <script>
 const meals=[
 {day:'MON',date:'Nov 16',name:'Miso-glazed salmon bowls',cuisine:'JAPANESE-INSPIRED',time:'35 min',img:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=900',desc:'Salmon, brown rice, edamame, cucumber, avocado and quick-pickled carrot.',tags:['Omega-3','Fiber','Vitamin D'],cost:'$4.10 / serving',ingredients:['2.5 lb salmon','4 cups dry brown rice','2 cups shelled edamame','2 cucumbers','3 carrots','2 avocados','white miso, honey, rice vinegar, tamari'],steps:['Cook rice according to package directions.','Whisk ⅓ cup miso, 3 tbsp honey and 2 tbsp tamari. Brush over salmon.','Roast salmon at 425°F for 12–15 minutes, until it flakes and reaches 145°F.','Quick-pickle shaved carrot in rice vinegar, a pinch of salt and sugar for 15 minutes.','Serve salmon over rice with edamame, cucumber, avocado and pickled carrot.']},
@@ -22,7 +22,14 @@ const meals=[
 {day:'THU',date:'Nov 19',name:'Chicken shawarma & rainbow tray bake',cuisine:'MIDDLE EASTERN',time:'50 min',img:'https://images.unsplash.com/photo-1544025162-d76694265947?w=900',desc:'Spiced chicken thighs with cauliflower, red onion, peppers, herby yogurt and bulgur.',tags:['Protein','Vitamin C','Plant variety'],cost:'$3.05 / serving',ingredients:['4 lb chicken thighs','2 heads cauliflower','3 bell peppers','2 red onions','2 cups dry bulgur','Greek yogurt, lemon, garlic, cumin, paprika'],steps:['Heat oven to 425°F. Toss chicken with yogurt, lemon, garlic, cumin, paprika and salt.','Spread chicken and chopped vegetables on two sheet pans.','Roast 30–40 minutes, until chicken reaches 165°F.','Cook bulgur according to package directions.','Serve with lemon-herb yogurt and chopped parsley.']},
 {day:'FRI',date:'Nov 20',name:'Mushroom-lentil bolognese',cuisine:'ITALIAN',time:'55 min',img:'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=900',desc:'A slow-simmered mushroom and lentil sauce over whole-wheat pasta with parmesan.',tags:['Fiber','Folate','Potassium'],cost:'$1.85 / serving',ingredients:['1 lb whole-wheat pasta','1 lb mushrooms','2 cups cooked lentils','1 onion','2 carrots','28 oz crushed tomatoes','tomato paste, garlic, oregano, parmesan'],steps:['Finely chop mushrooms, onion and carrots.','Brown vegetables in olive oil until deeply caramelized, 12–15 minutes.','Add garlic, tomato paste, tomatoes, lentils and oregano. Simmer 25 minutes.','Cook pasta until al dente; reserve a cup of pasta water.','Toss pasta with sauce and pasta water; finish with parmesan.']}
 ];
-const lunches=[['Greek yogurt power bowls','Greek yogurt, berries, toasted oats, pumpkin seeds and ground flax.','10 min','https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400'],['Hummus & egg mezze plates','Hummus, boiled eggs, whole-grain pita, cucumbers, tomatoes and olives.','12 min','https://images.unsplash.com/photo-1547592180-85f173990554?w=400'],['Sardine-avocado toast','Whole-grain toast, mashed avocado, sardines, lemon and crunchy radish.','8 min','https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400'],['Leftover shawarma grain wraps','Chicken, bulgur, greens, yogurt sauce and crunchy vegetables in a wrap.','10 min','https://images.unsplash.com/photo-1547592180-85f173990554?w=400']];
+const allLunches=[['Greek yogurt power bowls','Greek yogurt, berries, toasted oats, pumpkin seeds and ground flax.','10 min','https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400'],['Hummus & egg mezze plates','Hummus, boiled eggs, whole-grain pita, cucumbers, tomatoes and olives.','12 min','https://images.unsplash.com/photo-1547592180-85f173990554?w=400'],['Sardine-avocado toast','Whole-grain toast, mashed avocado, sardines, lemon and crunchy radish.','8 min','https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400'],['Leftover shawarma grain wraps','Chicken, bulgur, greens, yogurt sauce and crunchy vegetables in a wrap.','10 min','https://images.unsplash.com/photo-1547592180-85f173990554?w=400'],
+ ['Hummus and cucumber pita', 'Stuff whole-wheat pita with hummus, cucumber, tomatoes and egg slices.', '8 min', ''],
+ ['Blueberry overnight oats', 'Mix oats, plain yogurt, blueberries and ground flax. Chill overnight.', '5 min prep', ''],
+ ['Sardine and tomato sandwiches', 'Layer sardines, sliced tomato and greens on whole-wheat bread with a squeeze of lime.', '8 min', ''],
+ ['Chicken and avocado toast', 'Top toast with leftover chicken, smashed avocado and radishes.', '8 min', '']
+];
+let lunchSelection = [0, 1, 2, 3];
+
 let additions=[];let checked={};let eaten={};let current='menu';
 const recs = [
   {id:'beans', name:'Add kiwi and pumpkin seeds', portion:'One snack for seven, estimated at one kiwi and a tablespoon of seeds per serving.', add:'Kiwi and pumpkin-seed snack', shop:['7 kiwis','1 small bag pumpkin seeds']},
@@ -35,15 +42,18 @@ const lunchGroceries = [
   ['Hummus','Eggs','Whole-wheat pita','Cucumber','Tomatoes','Olives'],
   ['Sardines','Avocado','Whole-wheat bread','Lime','Radishes'],
   ['Leftover chicken and bulgur','Leafy greens','Greek yogurt','Whole-wheat wraps'],
+  ['Whole-wheat pita','Hummus','Cucumber','Tomatoes','Eggs'],
+  ['Oats','Plain yogurt','Blueberries','Ground flaxseed'],
+  ['Sardines','Tomatoes','Leafy greens','Whole-wheat bread','Lime'],
+  ['Cooked chicken (or leftovers)','Avocado','Whole-wheat bread','Radishes'],
 ];
 function groceryGroups() {
   return [...meals.map(meal => [meal.name, ...meal.ingredients]),
-    ['QUICK LUNCHES', ...new Set(lunchGroceries.flat())]];
+    ['QUICK LUNCHES', ...new Set(lunchSelection.flatMap(i => lunchGroceries[i]))]];
 }
 function showToast(s){let t=document.getElementById('toast');t.textContent=s;t.classList.remove('hide');setTimeout(()=>t.classList.add('hide'),2100)}
 function setView(v){current=v;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===v));render()}
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
-function menuView(){return `<div class="section-head"><div><h3>Dinner, handled.</h3><p>Five flavor-forward dinners · serves 7</p></div><button class="btn light" onclick="showToast('Your menu is saved on this device.')">Save week</button></div><div class="grid">${meals.map((m,i)=>`<article class="meal"><img src="${m.img}" alt="${m.name}" loading="lazy"><div class="meal-body"><div class="meal-top"><span class="pill">${m.day} · ${m.date}</span><span style="font-size:11px;color:var(--muted)">${m.time}</span></div><h4>${m.name}</h4><p>${m.desc}</p><div class="meal-foot"><span>${m.cuisine}</span><button class="link" onclick="openRecipe(${i})">Recipe ↗</button></div></div></article>`).join('')}</div><div class="section-head"><div><h3>Fast lunches</h3><p>Four low-effort ideas · serves 3–4</p></div></div><div class="panel">${lunches.map(l=>`<div class="lunch"><img src="${l[3]}" alt="" loading="lazy"><div><h4>${l[0]}</h4><p>${l[1]}</p><small style="color:var(--green)">${l[2]} · quick assembly</small></div></div>`).join('')}</div><div class="note">This starter week is a sample plan, not a full-day nutrition prescription. Breakfasts, snacks, drinks and actual portions eaten are not yet included in the nutrient estimate.</div>`}
 // USDA FoodData Central SR Legacy IDs and nutrient amounts per 100 g.
 const foodNutrients = {
   "168153": [1.14, 3.0, 34.0, 0.31, 17.0, 312.0, 92.7, 0.0],
@@ -136,7 +146,12 @@ const dinnerPortions = {
   "2 bags spinach": [168462, 284],
   "4 cups dry rice": [169703, 740],
 };
-const lunchPortions = [[[170903, 170], [171711, 75], [169705, 30], [170556, 10], [169414, 7]], [[174289, 60], [171287, 50], [174916, 60], [168409, 60], [170457, 65], [169094, 20]], [[175139, 60], [171705, 60], [172688, 56], [168155, 10], [169276, 35]], [[173627, 100], [170287, 70], [169249, 25], [170903, 45], [174916, 60]]];
+const lunchPortions = [[[170903, 170], [171711, 75], [169705, 30], [170556, 10], [169414, 7]], [[174289, 60], [171287, 50], [174916, 60], [168409, 60], [170457, 65], [169094, 20]], [[175139, 60], [171705, 60], [172688, 56], [168155, 10], [169276, 35]], [[173627, 100], [170287, 70], [169249, 25], [170903, 45], [174916, 60]],
+  [[174916,60],[174289,60],[168409,60],[170457,65],[171287,50]],
+  [[169705,40],[171284,170],[171711,75],[169414,7]],
+  [[175139,70],[170457,65],[169249,25],[172688,56],[168155,10]],
+  [[173627,100],[171705,60],[172688,56],[169276,35]]
+];
 const coachPortions = {
   "beans": [[168153, 75], [170556, 10]],
   "yogurt": [[171284, 170], [171711, 75]],
@@ -164,7 +179,7 @@ function dinnerNutrients(meal) {
 
 function weeklyNutrients(selected) {
   const dinners = meals.map(dinnerNutrients);
-  const lunches = lunchPortions.map(estimateNutrients);
+  const lunches = lunchSelection.map(i => estimateNutrients(lunchPortions[i]));
   const extras = selected.map(rec => estimateNutrients(coachPortions[rec.id]));
   return nutrientTargets.map((_, axis) =>
     dinners.reduce((sum, meal) => sum + meal[axis], 0) +
@@ -223,7 +238,7 @@ function coachView() {
   const unmatched = [...new Set(meals.flatMap(meal =>
     meal.ingredients.filter(line => !Object.hasOwn(dinnerPortions, line))))];
   const perMeal = [...meals.map(meal => [meal.name, dinnerNutrients(meal)]),
-    ...lunches.map((lunch, i) => [lunch[0], estimateNutrients(lunchPortions[i])])]
+    ...lunchSelection.map(i => [allLunches[i][0], estimateNutrients(lunchPortions[i])])]
     .map(([name, amounts]) => `<details><summary>${esc(name)}</summary><ul>
       ${nutrientTargets.map(([label, target], i) =>
         `<li>${label} · ${Math.round(amounts[i] / target * 100)}% daily reference per serving</li>`).join('')}
@@ -245,10 +260,10 @@ function coachView() {
     <button class="link" onclick="removeRec('${rec.id}')">Undo</button></div>`).join('')}</div>` : ''}`;
 }
 
-function recipeView(){return `<div class="section-head"><div><h3>Recipe collection</h3><p>Complete dinner recipes scaled for seven</p></div></div><div class="panel">${meals.map((m,i)=>`<div class="lunch"><img src="${m.img}" alt=""><div style="flex:1"><h4>${m.name}</h4><p>${m.time} · ${m.cuisine}</p></div><button class="btn light" onclick="openRecipe(${i})">Open</button></div>`).join('')}</div><div class="note">Cooking temperatures and times are included in the steps. Use a food thermometer for doneness; poultry 165°F, fish 145°F and whole cuts/ground meats according to safe handling guidance.</div>`}
+function recipeView(){return `<div class="section-head"><div><h3>Recipe collection</h3><p>Complete dinner recipes scaled for seven</p></div></div><div class="panel">${meals.map((m,i)=>`<div class="lunch">${m.img ? `<img src="${m.img}" alt="">` : ''}<div style="flex:1"><h4>${m.name}</h4><p>${m.time} · ${m.cuisine}</p></div><button class="btn light" onclick="openRecipe(${i})">Open</button></div>`).join('')}</div><div class="note">Cooking temperatures and times are included in the steps. Use a food thermometer for doneness; poultry 165°F, fish 145°F and whole cuts/ground meats according to safe handling guidance.</div>`}
 
-function render(){document.getElementById('main').innerHTML=current==='menu'?menuView():current==='coach'?coachView():current==='recipes'?recipeView():shopView();document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===current))}
-function openRecipe(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><span class="pill">${m.cuisine} · SERVES 7</span><h3 style="font:700 27px Georgia;margin:12px 0">${m.name}</h3><div class="recipe"><img src="${m.img}" alt=""><div><b>Ingredients</b><ul>${m.ingredients.map(x=>`<li>${x}</li>`).join('')}</ul></div></div><h4>Method</h4><ol>${m.steps.map(x=>`<li>${x}</li>`).join('')}</ol><p style="font-size:12px;color:var(--muted)">Estimated cost: ${m.cost}. Nutrient tags: ${m.tags.join(' · ')}.</p><button class="btn" onclick="markEaten(${i})">${eaten[i]?'✓ Confirmed eaten':'Mark as eaten'}</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
+function render(){document.getElementById('weekLabel').textContent=weekLabel(weekStart);document.getElementById('main').innerHTML=current==='menu'?menuView():current==='coach'?coachView():current==='recipes'?recipeView():shopView();document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===current))}
+function openRecipe(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><span class="pill">${m.cuisine} · SERVES 7</span><h3 style="font:700 27px Georgia;margin:12px 0">${m.name}</h3><div class="recipe">${m.img ? `<img src="${m.img}" alt="">` : ''}<div><b>Ingredients</b><ul>${m.ingredients.map(x=>`<li>${x}</li>`).join('')}</ul></div></div><h4>Method</h4><ol>${m.steps.map(x=>`<li>${x}</li>`).join('')}</ol><p style="font-size:12px;color:var(--muted)">Estimated cost: ${m.cost}. Nutrient tags: ${m.tags.join(' · ')}.</p><button class="btn" onclick="markEaten(${i})">${eaten[i]?'✓ Confirmed eaten':'Mark as eaten'}</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
 function closeModal(){document.getElementById('modal').classList.add('hide')}
 function markEaten(i){eaten[i]=!eaten[i];showToast(eaten[i]?'Marked as eaten':'Eaten status removed');closeModal();render()}
 function addRec(id){let r=recs.find(x=>x.id===id);if(!additions.some(x=>x.id===id)){additions.push(r);showToast('Added to projected plan and shopping list');render()}}
@@ -262,17 +277,169 @@ const mealAlternates=[
  {name:'Turkey meatballs with tomato-lentil sauce',cuisine:'ITALIAN-INSPIRED',time:'45 min',desc:'Herby turkey meatballs simmered in tomato and lentil sauce with whole-grain pasta.',tags:['Iron','Fiber','Protein'],cost:'$2.70 / serving',ingredients:['2.5 lb ground turkey','2 cups cooked lentils','28 oz crushed tomatoes','1 lb whole-wheat pasta','1 egg','garlic, oregano, parmesan'],steps:['Mix turkey, egg, garlic and herbs; form meatballs.','Brown meatballs in a Dutch oven.','Add tomatoes and lentils; simmer until meatballs reach 165°F.','Cook pasta and serve with sauce and parmesan.']},
  {name:'Coconut chickpea & spinach curry',cuisine:'SOUTH ASIAN-INSPIRED',time:'35 min',desc:'Chickpeas and spinach in a fragrant tomato-coconut curry over brown rice.',tags:['Fiber','Folate','Magnesium'],cost:'$1.95 / serving',ingredients:['4 cans chickpeas','2 cans light coconut milk','1 large onion','2 bags spinach','28 oz crushed tomatoes','4 cups dry rice','curry spices, ginger, garlic'],steps:['Cook rice.','Soften onion, ginger and garlic; add curry spices.','Stir in tomatoes, coconut milk and chickpeas; simmer 20 minutes.','Fold in spinach until wilted.','Serve over rice with yogurt and lime if desired.']}
 ];
-function persistState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({meals,additions:additions.map(x=>x.id),checked,eaten,lunchDone}));let el=document.getElementById('saveStatus');if(el)el.textContent='Saved on this device · '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});}catch(e){let el=document.getElementById('saveStatus');if(el)el.textContent='Browser storage unavailable; use Export groceries.'}}
-let lunchDone={};
-function loadState(){try{let x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!x)return;if(Array.isArray(x.meals)&&x.meals.length===5){x.meals.forEach((m,i)=>Object.assign(meals[i],m));}additions=(x.additions||[]).map(id=>recs.find(r=>r.id===id)).filter(Boolean);checked=x.checked||{};eaten=x.eaten||{};lunchDone=x.lunchDone||{};}catch(e){console.warn('Saved Family Fuel data could not be loaded',e)}}
+const starterWeek = '2026-11-16';
+const dinnerCatalog = [...meals.map(meal => ({...meal})),
+  ...mealAlternates.map(meal => ({...meal, img: ''}))];
+const weekdays = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+const shortDate = new Intl.DateTimeFormat('en-US', {month: 'short', day: 'numeric'});
+const fullDate = new Intl.DateTimeFormat('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+let weekStart = starterWeek;
+let weeklyDraft = null;
+let lunchDone = {};
+
+function dateKey(date) {
+  return [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+    .map((part, i) => String(part).padStart(i === 0 ? 4 : 2, '0')).join('-');
+}
+
+function weekDate(key, offset = 0) {
+  const [year, month, day] = key.split('-').map(Number);
+  return new Date(year, month - 1, day + offset, 12);
+}
+
+function availableWeek(now = new Date()) {
+  const weekday = now.getDay();
+  const sundayAfterEight = weekday === 0 && now.getHours() >= 8;
+  const offset = sundayAfterEight ? 1 : -(weekday + 6) % 7;
+  return dateKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset, 12));
+}
+
+function weekLabel(key) {
+  return `${shortDate.format(weekDate(key))} – ${fullDate.format(weekDate(key, 6))}`;
+}
+
+function validWeekKey(key) {
+  return typeof key === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(key) &&
+    dateKey(weekDate(key)) === key && weekDate(key).getDay() === 1;
+}
+
+function scheduleDinners(selection, week) {
+  return selection.map((recipe, i) => ({
+    ...recipe, day: weekdays[i], date: shortDate.format(weekDate(week, i)),
+  }));
+}
+
+function draftWeek(week, previousMeals, previousLunches) {
+  const [year, month, day] = week.split('-').map(Number);
+  const weekNumber = Math.floor(Date.UTC(year, month - 1, day) / (7 * 24 * 60 * 60 * 1000));
+  const lunchStart = ((weekNumber * 2) % allLunches.length + allLunches.length) % allLunches.length;
+  let lunchSelection = Array.from({length: 4}, (_, i) => (lunchStart + i) % allLunches.length);
+  if (lunchSelection.every(i => previousLunches.includes(i))) {
+    lunchSelection = lunchSelection.map(i => (i + 2) % allLunches.length);
+  }
+
+  const previous = new Set(previousMeals.map(meal => meal.name));
+  const newRecipes = dinnerCatalog.filter(recipe => !previous.has(recipe.name)).length;
+  const minimumNew = Math.min(2, newRecipes);
+  const lunchTotals = lunchSelection.map(i => estimateNutrients(lunchPortions[i]));
+  const dinnerTotals = dinnerCatalog.map(dinnerNutrients);
+  let best = null;
+  for (let mask = 0; mask < 2 ** dinnerCatalog.length; mask++) {
+    const choices = dinnerCatalog.map((_, i) => i).filter(i => mask & (1 << i));
+    if (choices.length !== 5 || choices.filter(i => !previous.has(dinnerCatalog[i].name)).length < minimumNew) continue;
+    const totals = nutrientTargets.map((_, axis) =>
+      choices.reduce((sum, i) => sum + dinnerTotals[i][axis], 0) +
+      lunchTotals.reduce((sum, amounts) => sum + amounts[axis] / 2, 0)
+    );
+    const score = coverageScore(weeklyCoverage(totals));
+    if (!best || score > best.score) best = {choices, score};
+  }
+  return {
+    week, lunchSelection, score: best.score,
+    meals: scheduleDinners(best.choices.map(i => dinnerCatalog[i]), week),
+  };
+}
+
+function storedPlan() {
+  return {weekStart, meals, lunchSelection, additions: additions.map(rec => rec.id), checked, eaten, lunchDone};
+}
+
+function persistState() {
+  const status = document.getElementById('saveStatus');
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(storedPlan()));
+    status.textContent = 'Saved on this device · ' + new Date().toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
+  } catch (error) {
+    status.textContent = 'Browser storage unavailable; use Export groceries.';
+  }
+}
+
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (!saved || !Array.isArray(saved.meals) || saved.meals.length !== 5) return;
+    weekStart = validWeekKey(saved.weekStart) ? saved.weekStart : starterWeek;
+    meals.splice(0, meals.length, ...scheduleDinners(saved.meals, weekStart));
+    if (Array.isArray(saved.lunchSelection) && saved.lunchSelection.length === 4 &&
+        new Set(saved.lunchSelection).size === 4 &&
+        saved.lunchSelection.every(i => Number.isInteger(i) && allLunches[i])) {
+      lunchSelection = saved.lunchSelection;
+    }
+    additions = (saved.additions || []).map(id => recs.find(rec => rec.id === id)).filter(Boolean);
+    checked = saved.checked || {};
+    eaten = saved.eaten || {};
+    lunchDone = saved.lunchDone || {};
+  } catch (error) {
+    console.warn('Saved Family Fuel data could not be loaded', error);
+  }
+}
+
+function refreshWeeklyDraft(now = new Date()) {
+  const available = availableWeek(now);
+  if (available <= weekStart || weeklyDraft?.week === available) return false;
+  weeklyDraft = draftWeek(available, meals, lunchSelection);
+  render();
+  return true;
+}
+
+function weeklyDraftView() {
+  if (!weeklyDraft) return '';
+  return `<section class="panel" style="margin-top:16px">
+    <h3>New plan for ${weekLabel(weeklyDraft.week)}</h3>
+    <p>Five dinners and four quick lunches · projected score <strong>${esc(formatCoverage(weeklyDraft.score))} / 100</strong></p>
+    <details><summary>Preview meals</summary><h4>Dinners</h4><ol>
+      ${weeklyDraft.meals.map(meal => `<li>${esc(meal.name)}</li>`).join('')}
+    </ol><h4>Lunches</h4><ul>
+      ${weeklyDraft.lunchSelection.map(i => `<li>${esc(allLunches[i][0])}</li>`).join('')}
+    </ul></details><p>Starting this plan replaces the menu and clears this week’s checkmarks and coach additions.</p>
+    <button class="btn" onclick="startWeeklyPlan()">Start this plan</button>
+  </section>`;
+}
+
+function startWeeklyPlan() {
+  if (!weeklyDraft) return;
+  weekStart = weeklyDraft.week;
+  meals.splice(0, meals.length, ...weeklyDraft.meals);
+  lunchSelection = weeklyDraft.lunchSelection;
+  additions = [];
+  checked = {};
+  eaten = {};
+  lunchDone = {};
+  weeklyDraft = null;
+  persistState();
+  render();
+  showToast('Your new week is ready.');
+}
+
 function saveWeek(){persistState();showToast('Family Fuel changes saved on this device.')}
-function resetWeek(){if(!confirm('Reset the sample menu, coach actions and grocery checkmarks?'))return;localStorage.removeItem(STORAGE_KEY);location.reload()}
-function menuView(){return `<div class="section-head"><div><h3>Dinner, handled.</h3><p>Five flavor-forward dinners · serves 7 · tap a recipe or edit a meal</p></div><button class="btn light" onclick="regenWeek()">↻ Regenerate week</button></div><div class="grid">${meals.map((m,i)=>`<article class="meal"><img src="${m.img}" alt="${m.name}" loading="lazy"><div class="meal-body"><div class="meal-top"><span class="pill">${m.day} · ${m.date}</span><span style="font-size:11px;color:var(--muted)">${m.time}</span></div><h4>${m.name}</h4><p>${m.desc}</p><div class="meal-foot"><span>${m.cuisine}</span><span>${eaten[i]?'✓ Eaten':'Planned'}</span></div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" onclick="openRecipe(${i})">View recipe</button><button class="btn light" onclick="openEditor(${i})">Edit</button><button class="btn outline" onclick="swapMeal(${i})">Swap</button></div></div></article>`).join('')}</div><div class="section-head"><div><h3>Fast lunches</h3><p>Four low-effort ideas · serves 3–4 · tick when made</p></div></div><div class="panel">${lunches.map((l,i)=>`<div class="lunch"><img src="${l[3]}" alt="" loading="lazy"><div style="flex:1"><h4>${l[0]}</h4><p>${l[1]}</p><small style="color:var(--green)">${l[2]} · quick assembly</small></div><label style="font-size:12px;white-space:nowrap"><input type="checkbox" ${lunchDone[i]?'checked':''} onchange="toggleLunch(${i},this.checked)"> Made</label></div>`).join('')}</div><div class="note">The Nutrient Coach estimates coverage from the meals and additions in this plan.</div>`}
+function resetWeek(){if(!confirm('Clear this saved plan and its checkmarks from this device?'))return;localStorage.removeItem(STORAGE_KEY);location.reload()}
+function menuView(){return `${weeklyDraftView()}<div class="section-head"><div><h3>Dinner, handled.</h3><p>Five flavor-forward dinners · serves 7 · tap a recipe or edit a meal</p></div></div><div class="grid">${meals.map((m,i)=>`<article class="meal">${m.img ? `<img src="${m.img}" alt="${esc(m.name)}" loading="lazy">` : ''}<div class="meal-body"><div class="meal-top"><span class="pill">${m.day} · ${m.date}</span><span style="font-size:11px;color:var(--muted)">${m.time}</span></div><h4>${esc(m.name)}</h4><p>${esc(m.desc)}</p><div class="meal-foot"><span>${m.cuisine}</span><span>${eaten[i]?'✓ Eaten':'Planned'}</span></div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" onclick="openRecipe(${i})">View recipe</button><button class="btn light" onclick="openEditor(${i})">Edit</button><button class="btn outline" onclick="swapMeal(${i})">Swap</button></div></div></article>`).join('')}</div><div class="section-head"><div><h3>Fast lunches</h3><p>Four low-effort ideas · serves 3–4 · tick when made</p></div></div><div class="panel">${lunchSelection.map((id,i)=>{const l=allLunches[id];return `<div class="lunch">${l[3]?`<img src="${l[3]}" alt="" loading="lazy">`: ''}<div style="flex:1"><h4>${l[0]}</h4><p>${l[1]}</p><small style="color:var(--green)">${l[2]} · quick assembly</small></div><label style="font-size:12px;white-space:nowrap"><input type="checkbox" ${lunchDone[i]?'checked':''} onchange="toggleLunch(${i},this.checked)"> Made</label></div>`}).join('')}</div><div class="note">The Nutrient Coach estimates coverage from the meals and additions in this plan.</div>`}
 function openEditor(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><h3 style="font:700 25px Georgia">Edit ${m.day} dinner</h3><label>Meal name<input id="editName" value="${esc(m.name)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Description<textarea id="editDesc" style="width:100%;min-height:76px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.desc)}</textarea></label><label>Cuisine<input id="editCuisine" value="${esc(m.cuisine)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Prep/cook time<input id="editTime" value="${esc(m.time)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Ingredients (one per line)<textarea id="editIngredients" style="width:100%;min-height:120px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.ingredients.join('\n'))}</textarea></label><label>Cooking steps (one per line)<textarea id="editSteps" style="width:100%;min-height:140px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.steps.join('\n'))}</textarea></label><button class="btn" onclick="saveMealEdit(${i})">Save meal</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function saveMealEdit(i){let m=meals[i];m.name=document.getElementById('editName').value.trim()||m.name;m.desc=document.getElementById('editDesc').value.trim();m.cuisine=document.getElementById('editCuisine').value.trim();m.time=document.getElementById('editTime').value.trim();m.ingredients=document.getElementById('editIngredients').value.split('\n').map(x=>x.trim()).filter(Boolean);m.steps=document.getElementById('editSteps').value.split('\n').map(x=>x.trim()).filter(Boolean);closeModal();persistState();render();showToast('Meal updated.')}
-function swapMeal(i){let m=meals[i],alt=mealAlternates[(m.altIndex||0)%mealAlternates.length];Object.assign(m,alt,{altIndex:((m.altIndex||0)+1)%mealAlternates.length});delete eaten[i];persistState();render();showToast('Dinner swapped. Open it to review the recipe.')}
-function regenWeek(){if(!confirm('Swap all five dinners for alternate ideas? You can still edit each meal.'))return;meals.forEach((m,i)=>{let a=mealAlternates[i%mealAlternates.length];Object.assign(m,a,{altIndex:(m.altIndex||0)+1});});eaten={};persistState();render();showToast('New dinner lineup created.')}
+function swapMeal(i) {
+  const meal = meals[i];
+  const inUse = new Set(meals.map(item => item.name));
+  const start = dinnerCatalog.findIndex(recipe => recipe.name === meal.name) + 1;
+  const alternatives = [...dinnerCatalog.slice(start), ...dinnerCatalog.slice(0, start)];
+  const next = alternatives.find(recipe => !inUse.has(recipe.name));
+  if (!next) return;
+  meals[i] = {...next, day: meal.day, date: meal.date};
+  delete eaten[i];
+  persistState();
+  render();
+  showToast('Dinner swapped. Open it to review the recipe.');
+}
 function toggleLunch(i,v){lunchDone[i]=v;persistState()}
 function shopView(){let extra=additions.flatMap(r=>r.shop.map(x=>({name:x,id:'coach-'+r.id+'-'+x.toLowerCase().replace(/[^a-z0-9]/g,''),group:'COACH ADDITIONS'})));let groups=groceryGroups().map(([g,...items])=>`<div class="shopgroup"><h4>${esc(g)}</h4>${items.map(it=>{let id=it.toLowerCase().replace(/[^a-z0-9]/g,'');return `<label class="shopitem ${checked[id]?'done':''}"><input type="checkbox" ${checked[id]?'checked':''} onchange="toggleShop('${id}')"><span>${esc(it)}</span></label>`}).join('')}</div>`).join('');return `<div class="section-head"><div><h3>Grocery run</h3><p>Grouped by meal · check off as you shop</p></div><button class="btn light" onclick="window.print()">Print list</button></div><div class="panel"><div class="stats"><div class="stat"><strong>Walmart</strong><span>pantry, grains, dairy, frozen & everyday produce</span></div><div class="stat"><strong>Tom Thumb</strong><span>seafood, specialty produce & meat cuts</span></div><div class="stat"><strong>${Object.values(checked).filter(Boolean).length}</strong><span>items checked</span></div><div class="stat"><strong>${groceryGroups().reduce((n,g)=>n+g.length-1,0)+extra.length}</strong><span>listed items</span></div></div><div class="shopping">${groups}</div>${extra.length?`<div class="section-head"><div><h3>Coach additions</h3><p>Added automatically from your selected recommendations</p></div></div><div class="shopping">${extra.map(x=>`<label class="shopitem ${checked[x.id]?'done':''}"><input type="checkbox" ${checked[x.id]?'checked':''} onchange="toggleShop('${x.id}')"><span>${x.name}</span></label>`).join('')}</div>`:''}<div class="note">Store assignments are planning defaults. Prices and availability are not live-checked; pantry inventory and retailer ordering are not connected.</div></div>`}
 function exportShopping(){let rows=[];groceryGroups().forEach(([g,...items])=>{rows.push(g);items.forEach(x=>rows.push((checked[x.toLowerCase().replace(/[^a-z0-9]/g,'')]?'[x] ':'[ ] ')+x))});additions.forEach(r=>{rows.push('COACH ADDITIONS');r.shop.forEach(x=>rows.push('[ ] '+x))});let blob=new Blob([rows.join('\n')],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='family-fuel-shopping-list.txt';a.click();URL.revokeObjectURL(url);showToast('Shopping list exported.')}
@@ -280,8 +447,14 @@ function addRec(id){let r=recs.find(x=>x.id===id);if(r&&!additions.some(x=>x.id=
 function removeRec(id){additions=additions.filter(x=>x.id!==id);persistState();render()}
 function toggleShop(id){checked[id]=!checked[id];persistState();render()}
 function markEaten(i){eaten[i]=!eaten[i];persistState();showToast(eaten[i]?'Marked as eaten':'Eaten status removed');closeModal();render()}
-function render(){document.getElementById('main').innerHTML=current==='menu'?menuView():current==='coach'?coachView():current==='recipes'?recipeView():shopView();document.querySelectorAll('.tab,.bottomnav button').forEach(b=>b.classList.toggle('active',b.dataset.view===current))}
-loadState();render();
+function render(){document.getElementById('weekLabel').textContent=weekLabel(weekStart);document.getElementById('main').innerHTML=current==='menu'?menuView():current==='coach'?coachView():current==='recipes'?recipeView():shopView();document.querySelectorAll('.tab,.bottomnav button').forEach(b=>b.classList.toggle('active',b.dataset.view===current))}
+loadState();
+if (!refreshWeeklyDraft()) render();
+window.addEventListener('focus', () => refreshWeeklyDraft());
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshWeeklyDraft();
+});
+setInterval(() => refreshWeeklyDraft(), 60000);
 
 function showInstallHelp(){
  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);

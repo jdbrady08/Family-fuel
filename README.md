@@ -15,6 +15,9 @@ Upload the *contents* of this folder to a static web host that serves HTTPS (for
 3. Choose Add to Home Screen.
 4. Keep “Open as Web App” enabled if offered, then tap Add.
 
+## Weekly plans
+Open the app on Sunday at or after 8 a.m. device time to preview the upcoming Monday’s plan. The draft rotates through the built-in catalog and uses the planned-food score to select five dinners alongside four rotating quick lunches. Starting the draft replaces the active menu and clears its checkmarks and coach additions. This feature runs while the app is open, including offline once the app shell is cached.
+
 ## Important current limitations
 - The app still stores changes in this browser's local storage; there is no account or cross-device sync.
 - Grocery prices and retailer ordering are not connected.
