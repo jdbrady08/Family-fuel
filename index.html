@@ -1167,9 +1167,15 @@ function libraryView() {
     '<p>Imported recipes will appear here.</p>'}`;
 }
 
+function suggestedRecipeSlot(id) {
+  if (meals.some(meal => meal.id === id)) return -1;
+  return meals.findIndex((meal, index) => !meal.imported && !eaten[index]);
+}
+
 function openSavedRecipe(id) {
   const recipe = recipeLibrary.find(item => item.id === id);
   if (!recipe) return;
+  const suggestedSlot = suggestedRecipeSlot(id);
   const modal = document.getElementById('modal');
   modal.innerHTML = `<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox">
     <button class="close" onclick="closeModal()" aria-label="Close">×</button>
@@ -1179,8 +1185,12 @@ function openSavedRecipe(id) {
     <p>Ingredients scaled to seven.</p>
     <ul>${recipe.ingredients.map(line => `<li>${esc(line)}${recipe.reviewIngredients.includes(line) ? ' <small>· check quantity</small>' : ''}</li>`).join('')}</ul>
     ${sourceLink(recipe)}<p>Publisher nutrition is included where available. The other nutrients are unscored.</p>
-    <form onsubmit="useSavedRecipe(event,'${id}')"><label>Replace dinner
-      <select name="day">${meals.map((meal, i) => `<option value="${i}">${meal.day} · ${esc(meal.name)}</option>`).join('')}</select>
+    ${meals.some(meal => meal.id === id) ? '<p>This recipe is already in this week’s plan.</p>' : ''}
+    ${suggestedSlot < 0 ? '<p>Choose a dinner below to replace.</p>' : '<p>The next dinner slot is selected below.</p>'}
+    <form onsubmit="useSavedRecipe(event,'${id}')"><label>Dinner slot
+      <select name="day" required>
+        <option value="" ${suggestedSlot < 0 ? 'selected' : ''} disabled>Choose a dinner</option>
+        ${meals.map((meal, i) => `<option value="${i}" ${i === suggestedSlot ? 'selected' : ''}>${meal.day} · ${esc(meal.name)}${meal.imported ? ' (saved recipe)' : ''}${eaten[i] ? ' (eaten)' : ''}</option>`).join('')}</select>
     </label> <button class="btn" type="submit">Add to this week</button></form></div></div>`;
   modal.classList.remove('hide');
 }
@@ -1232,15 +1242,24 @@ function sourceLink(recipe) {
 
 function useSavedRecipe(event, id) {
   event.preventDefault();
-  const index = Number(event.currentTarget.elements.day.value);
+  const selected = event.currentTarget.elements.day.value;
+  const index = Number(selected);
   const recipe = recipeLibrary.find(item => item.id === id);
-  if (!recipe || !meals[index]) return;
-  meals[index] = {...recipe, day: meals[index].day, date: meals[index].date};
+  if (selected === '' || !Number.isInteger(index) || !recipe || !meals[index]) return;
+  if (meals[index].id === id) {
+    closeModal();
+    showToast('This recipe is already in that dinner slot.');
+    return;
+  }
+  const existing = meals[index];
+  if ((existing.imported || eaten[index]) &&
+      !confirm('Replace ' + existing.day + ' dinner, ' + existing.name + ', with ' + recipe.name + '?')) return;
+  meals[index] = {...recipe, ingredients: [...recipe.ingredients], day: existing.day, date: existing.date};
   delete eaten[index];
   closeModal();
   persistState();
-  setView('menu');
-  showToast('Dinner and shopping list updated.');
+  setView('recipes');
+  showToast('Added to ' + existing.day + '. Dinner and shopping list updated.');
 }
 
 loadState();
