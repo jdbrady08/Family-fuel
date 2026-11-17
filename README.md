@@ -25,6 +25,9 @@ Starting a new plan records the outgoing week’s score and nutrient coverage in
 
 The import API runs separately on Render as `family-fuel-recipe-import`, using `python3 recipe_import.py` and the `/health` endpoint. The existing app remains on the static site. Imports need internet access.
 
+## Dinner sides
+Each dinner supports common vegetable, bean and grain sides. The Add side selector previews nutrition and the projected weekly score for half, one or two portions per person. Saving adds seven servings to the shopping list. Added sides stay with that dinner slot when you swap its main dish. Sides are stored with the active plan.
+
 ## Shop the plan
 Shopping Lists groups the current plan’s groceries under Walmart and Tom Thumb. Repeated ingredients share a row, with matching units summed and other measurements shown side by side. Remove items you already have and restore them from Already have. Removed items stay off exports and printed lists for the current week. You can move an item between stores, check it off, and export one store or both. Per-item Walmart links open product search. For Tom Thumb, copy the ingredient name and paste it into the retailer’s search. Prices, inventory, and carts are handled on the retailers’ sites.
 
