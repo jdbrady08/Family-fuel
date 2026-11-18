@@ -282,6 +282,7 @@ def instagram_draft(url, caption, images=()):
         if bullet or re.match(r"^\d|^[¼½¾⅓⅔⅛]", raw):
             line = text(bullet[1] if bullet else raw, 300)
             if line:
+                line = re.sub(r"(?<=\d)(?=(?:kg|mg|g|ml|lb|lbs|oz|tbsp|tsp)\b)", " ", line, flags=re.I)
                 ingredients.append(line)
         elif ingredients:
             break
