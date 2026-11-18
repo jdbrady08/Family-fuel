@@ -1447,21 +1447,24 @@ const IMPORT_ENDPOINT = 'https://family-fuel-recipe-import.onrender.com/import';
 function importPanel() {
   return `<section class="panel"><h3>Import a recipe</h3>
     <form onsubmit="fetchRecipe(event)">
-      <label for="recipeLink">Pinterest Pin or recipe page</label>
-      <input id="recipeLink" name="recipeLink" type="url" placeholder="https://pin.it/…" maxlength="2048" required
+      <label for="recipeLink">Instagram Reel or post, Pinterest Pin, or recipe page</label>
+      <input id="recipeLink" name="recipeLink" type="url" placeholder="https://…" maxlength="2048" required
         style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;margin:8px 0">
-      <button class="btn" type="submit">Import link</button>
+      <details><summary>Paste an Instagram caption</summary>
+        <label>Caption <textarea name="caption" maxlength="5000" rows="5" style="display:block;width:100%" placeholder="Paste the recipe caption if Instagram can’t load it"></textarea></label>
+      </details>
+      <button class="btn" type="submit">Import recipe</button>
       <button class="btn light" type="button" onclick="showRecipeReview()">Enter by hand</button>
       <p id="importStatus" role="status"></p>
     </form>
     <div id="recipeReview"></div></section>`;
 }
 
-async function requestRecipeDraft(url) {
+async function requestRecipeDraft(url, caption) {
   const response = await fetch(IMPORT_ENDPOINT, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({url}),
+    body: JSON.stringify({url, ...(caption ? {caption} : {})}),
     signal: AbortSignal.timeout(100000),
   });
   const draft = await response.json();
@@ -1477,13 +1480,13 @@ async function fetchRecipe(event) {
   button.disabled = true;
   status.textContent = 'Reading the recipe page…';
   try {
-    const draft = await requestRecipeDraft(form.elements.recipeLink.value.trim());
+    const draft = await requestRecipeDraft(form.elements.recipeLink.value.trim(), form.elements.caption.value.trim());
     if (!form.isConnected) return;
     status.textContent = 'Recipe found. Check the ingredients and serving count before saving.';
     showRecipeReview(draft);
   } catch (error) {
     status.textContent = error instanceof TypeError || error.name === 'TimeoutError'
-      ? 'The importer could not reach the recipe. Try the original recipe link or enter it by hand.'
+      ? 'The importer could not reach the recipe. For Instagram, paste the caption. For other sites, try the original recipe link.'
       : error.message;
   } finally {
     button.disabled = false;
