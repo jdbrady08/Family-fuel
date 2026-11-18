@@ -25,6 +25,9 @@ Starting a new plan records the outgoing week’s score and nutrient coverage in
 
 The import API runs separately on Render as `family-fuel-recipe-import`, using `python3 recipe_import.py` and the `/health` endpoint. The existing app remains on the static site. Imports need internet access.
 
+## Lunch nutrition and healthy additions
+Each fast lunch has estimated per-serving calories, protein, carbohydrate, fiber, fat, sodium and tracked vitamins and minerals. Healthy additions are paired to a chosen dinner or lunch, appear with that recipe, and contribute to its nutrition. The coach lets you change the pairing. Lunch shopping requirements scale to four servings while weekly coverage retains the average lunch attendance assumption of 3.5 people.
+
 ## Dinner sides
 Each dinner supports common vegetable, bean and grain sides. The Add side selector previews nutrition and the projected weekly score for half, one or two portions per person. Saving adds seven servings to the shopping list. Added sides stay with that dinner slot when you swap its main dish. Sides are stored with the active plan.
 

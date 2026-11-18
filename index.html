@@ -15,6 +15,8 @@ img[hidden]{display:none!important}
 .meal-sides{margin-top:12px;font-size:13px;border-top:1px solid var(--line);padding-top:10px}
 .side-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0}
 .modalbox select{max-width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;margin:6px 0 10px;display:block}
+.rec select,.shopitem select{display:block;max-width:100%;font:inherit;padding:6px;margin:6px 0;border:1px solid var(--line);border-radius:8px}
+.lunch-nutrition{margin-top:10px;font-size:13px}.lunch-nutrition td{text-align:right}.lunch-nutrition p{font-size:12px}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#456b50">
@@ -44,9 +46,9 @@ let lunchSelection = [0, 1, 2, 3];
 
 let additions=[];let dismissedRecs=[];let checked={};let eaten={};let current='menu';
 const recs = [
-  {id:'beans', name:'Add kiwi and pumpkin seeds', portion:'One snack for seven, estimated at one kiwi and a tablespoon of seeds per serving.', add:'Kiwi and pumpkin-seed snack', shop:['7 kiwis','1 small bag pumpkin seeds']},
-  {id:'yogurt', name:'Add plain yogurt and berries', portion:'One breakfast addition for seven, estimated at 170 g yogurt and 75 g berries per serving.', add:'Plain yogurt and berries', shop:['About 1.2 kg plain yogurt','About 525 g frozen berries']},
-  {id:'greens', name:'Serve spinach at two dinners', portion:'Two sides for seven, estimated at ½ cup cooked spinach per person each time.', add:'Spinach at two dinners', shop:['Spinach for 7 cups cooked']},
+  {id:'beans', name:'Add kiwi and pumpkin seeds', portion:'One kiwi and a tablespoon of pumpkin seeds per serving.', add:'Kiwi and pumpkin-seed snack', shop:['7 kiwis','1 small bag pumpkin seeds']},
+  {id:'yogurt', name:'Add plain yogurt and berries', portion:'170 g plain yogurt and 75 g berries per serving.', add:'Plain yogurt and berries', shop:['About 1.2 kg plain yogurt','About 525 g frozen berries']},
+  {id:'greens', name:'Serve spinach with this meal', portion:'One cup cooked spinach per person.', add:'Cooked spinach', shop:['Spinach for 7 cups cooked']},
   {id:'shellfish', name:'Add steamed mussels', portion:'One add-on for seven, estimated at 3 oz cooked mussel meat per serving.', add:'Steamed mussels', shop:['Mussels for about 21 oz cooked meat']},
   {"id": "sunflower", "name": "Snack on sunflower kernels", "portion": "20 g unsalted sunflower kernels per serving. Makes seven servings.", "add": "Snack on sunflower kernels", "shop": ["140 g unsalted sunflower kernels"]},
   {"id": "almonds", "name": "Serve almonds and orange slices", "portion": "20 g almonds and one small orange per serving. Makes seven servings.", "add": "Serve almonds and orange slices", "shop": ["140 g almonds", "7 small oranges"]},
@@ -516,10 +518,185 @@ function removeMealSide(index, id) {
   showToast('Side removed.');
 }
 
-function dinnerNutrients(meal) {
+const foodMacros = {
+  "168153": [61.0, 0.52, 14.66, 3.0],
+  "168155": [30.0, 0.2, 10.54, 2.0],
+  "168249": [109.0, 2.17, 0.0, 53.0],
+  "168409": [15.0, 0.11, 3.63, 2.0],
+  "168411": [121.0, 5.2, 8.91, 6.0],
+  "168421": [35.0, 1.49, 4.42, 53.0],
+  "168462": [23.0, 0.39, 3.63, 79.0],
+  "168463": [23.0, 0.26, 3.75, 70.0],
+  "168483": [90.0, 0.15, 20.71, 36.0],
+  "168660": [180.0, 11.48, 0.0, 81.0],
+  "169094": [116.0, 10.9, 6.04, 735.0],
+  "169097": [47.0, 0.12, 11.75, 0.0],
+  "169230": [149.0, 0.5, 33.06, 17.0],
+  "169249": [15.0, 0.15, 2.87, 28.0],
+  "169251": [22.0, 0.34, 3.26, 5.0],
+  "169276": [16.0, 0.1, 3.4, 39.0],
+  "169414": [534.0, 42.16, 28.88, 30.0],
+  "169703": [367.0, 3.2, 76.25, 5.0],
+  "169704": [123.0, 0.97, 25.58, 4.0],
+  "169705": [389.0, 6.9, 66.27, 2.0],
+  "169738": [352.0, 2.93, 73.37, 6.0],
+  "169967": [35.0, 0.41, 7.18, 41.0],
+  "169977": [31.0, 0.16, 7.37, 27.0],
+  "169986": [25.0, 0.28, 4.97, 30.0],
+  "170000": [40.0, 0.1, 9.34, 4.0],
+  "170108": [26.0, 0.3, 6.03, 4.0],
+  "170187": [654.0, 65.21, 13.71, 2.0],
+  "170287": [83.0, 0.24, 18.58, 5.0],
+  "170393": [41.0, 0.24, 9.58, 69.0],
+  "170457": [18.0, 0.2, 3.89, 5.0],
+  "170499": [72.0, 0.1, 16.8, 12.0],
+  "170501": [32.0, 0.28, 7.29, 186.0],
+  "170556": [559.0, 49.05, 10.71, 7.0],
+  "170562": [584.0, 51.46, 20.0, 9.0],
+  "170567": [579.0, 49.93, 21.55, 1.0],
+  "170688": [342.0, 1.33, 75.87, 17.0],
+  "170845": [299.0, 22.14, 2.4, 486.0],
+  "170848": [392.0, 25.0, 3.22, 1175.0],
+  "170903": [73.0, 1.92, 3.94, 34.0],
+  "171077": [120.0, 2.62, 0.0, 45.0],
+  "171267": [50.0, 1.98, 4.8, 47.0],
+  "171284": [61.0, 3.25, 4.66, 46.0],
+  "171287": [143.0, 9.51, 0.72, 142.0],
+  "171413": [884.0, 100.0, 0.0, 2.0],
+  "171579": [418.0, 37.6, 10.09, 603.0],
+  "171705": [160.0, 14.66, 8.53, 7.0],
+  "171711": [57.0, 0.33, 14.49, 1.0],
+  "172232": [23.0, 0.64, 2.65, 4.0],
+  "172336": [884.0, 100.0, 0.0, 0.0],
+  "172420": [352.0, 1.06, 63.35, 6.0],
+  "172421": [116.0, 0.38, 20.13, 2.0],
+  "172442": [198.0, 6.01, 25.37, 3728.0],
+  "172688": [252.0, 3.5, 42.71, 455.0],
+  "172850": [150.0, 8.34, 0.0, 69.0],
+  "173424": [155.0, 10.61, 1.12, 124.0],
+  "173627": [121.0, 4.12, 0.0, 95.0],
+  "173718": [168.0, 7.38, 0.0, 61.0],
+  "173800": [139.0, 2.77, 22.53, 246.0],
+  "173944": [89.0, 0.33, 22.84, 1.0],
+  "174217": [172.0, 4.48, 7.39, 369.0],
+  "174289": [237.0, 17.82, 15.0, 426.0],
+  "174916": [262.0, 1.71, 55.89, 421.0],
+  "175036": [218.0, 2.85, 44.64, 45.0],
+  "175139": [208.0, 11.45, 0.0, 307.0],
+  "175167": [208.0, 13.42, 0.0, 59.0],
+  "175179": [85.0, 0.51, 0.0, 119.0],
+  "175202": [333.0, 0.85, 60.27, 16.0],
+  "175204": [114.0, 0.29, 21.2, 340.0],
+};
+
+function validAdditionTarget(target) {
+  return /^d:[0-4]$/.test(target) || /^l:[0-3]$/.test(target);
+}
+
+function defaultAdditionTarget(rec) {
+  const sweet = /kiwi|yogurt|milk|oat|banana|orange|almond|walnut|sunflower/i.test(rec.name);
+  const titles = sweet ? lunchSelection.map(id => allLunches[id][0]) : meals.map(meal => meal.name);
+  const matches = sweet ? /bowl|yogurt|oat|toast/i : /bowl|chicken|salmon|rice|pasta/i;
+  const slot = Math.max(0, titles.findIndex(title => matches.test(title)));
+  return (sweet ? 'l:' : 'd:') + slot;
+}
+
+function additionTarget(rec) {
+  return validAdditionTarget(rec.target) ? rec.target : defaultAdditionTarget(rec);
+}
+
+function additionLabel(target) {
+  const slot = Number(target.split(':')[1]);
+  return target.startsWith('l:')
+    ? 'Lunch · ' + allLunches[lunchSelection[slot]][0]
+    : meals[slot].day + ' · ' + meals[slot].name;
+}
+
+function additionTargetOptions(target) {
+  return `<optgroup label="Dinners">${meals.map((meal, i) =>
+    `<option value="d:${i}" ${target === 'd:' + i ? 'selected' : ''}>${meal.day} · ${esc(meal.name)}</option>`).join('')}</optgroup>
+    <optgroup label="Fast lunches">${lunchSelection.map((id, i) =>
+    `<option value="l:${i}" ${target === 'l:' + i ? 'selected' : ''}>${esc(allLunches[id][0])}</option>`).join('')}</optgroup>`;
+}
+
+function additionNutrients(target, selected = additions) {
+  const entries = selected.filter(rec => additionTarget(rec) === target)
+    .map(rec => estimateNutrients(coachPortions[rec.id]));
+  return nutrientTargets.map((_, axis) => entries.reduce((sum, amounts) => sum + amounts[axis], 0));
+}
+
+function lunchNutrients(slot, selected = additions) {
+  const base = estimateNutrients(lunchPortions[lunchSelection[slot]]);
+  const extra = additionNutrients('l:' + slot, selected);
+  return base.map((value, axis) => value + extra[axis]);
+}
+
+function pairedAdditionsView(target) {
+  const paired = additions.filter(rec => additionTarget(rec) === target);
+  if (!paired.length) return '';
+  return `<div class="meal-sides"><strong>Healthy additions</strong>
+    ${paired.map(rec => `<div class="side-row"><span>${esc(rec.add)}</span>
+      <button class="link" onclick="removeRec('${rec.id}')">Remove</button></div>`).join('')}</div>`;
+}
+
+function previewRecommendation(id, target) {
+  const rec = recs.find(item => item.id === id);
+  if (!rec || !validAdditionTarget(target)) return;
+  const projected = weeklyCoverage(weeklyNutrients([...additions, {...rec, target}]));
+  document.getElementById('rec-score-' + id).textContent = formatCoverage(coverageScore(projected)) + ' / 100';
+}
+
+function changeAdditionTarget(id, target) {
+  const rec = additions.find(item => item.id === id);
+  if (!rec || !validAdditionTarget(target)) return;
+  rec.target = target;
+  persistState();
+  render();
+}
+
+function additionShoppingLines(rec) {
+  if (!additionTarget(rec).startsWith('l:')) return rec.shop;
+  return rec.shop.map(line => {
+    const input = line.replace(/^(?:about|approximately)\s+/i, '');
+    const forAmount = input.match(/^(.*\bfor\s+)(?:about\s+)?(.+)$/i);
+    const scaled = scaleIngredient(forAmount ? forAmount[2] : input, 4 / 7);
+    return scaled.needsReview ? line : (forAmount ? forAmount[1] : '') + scaled.line;
+  });
+}
+
+function lunchNutritionFacts(slot) {
+  const nutrients = lunchNutrients(slot);
+  const portions = [...lunchPortions[lunchSelection[slot]],
+    ...additions.filter(rec => additionTarget(rec) === 'l:' + slot)
+      .flatMap(rec => coachPortions[rec.id])];
+  const macros = [0, 1, 2, 3].map(axis =>
+    portions.reduce((sum, [id, grams]) => sum + foodMacros[id][axis] * grams / 100, 0));
+  const amount = value => value > 0 && value < .1 ? '&lt;0.1' : Number(value.toFixed(1)).toString();
+  return `<details class="lunch-nutrition"><summary>Nutrition facts</summary>
+    <p>Estimated per serving, including the healthy additions paired with this lunch.</p>
+    <table style="width:100%;text-align:left"><tbody>
+      <tr><th scope="row">Calories</th><td>${Math.round(macros[0])} kcal</td></tr>
+      <tr><th scope="row">Protein</th><td>${amount(nutrients[0])} g</td></tr>
+      <tr><th scope="row">Carbohydrate</th><td>${amount(macros[2])} g</td></tr>
+      <tr><th scope="row">Fiber</th><td>${amount(nutrients[1])} g</td></tr>
+      <tr><th scope="row">Fat</th><td>${amount(macros[1])} g</td></tr>
+      <tr><th scope="row">Sodium</th><td>${Math.round(macros[3])} mg</td></tr>
+    </tbody></table>
+    <details><summary>Vitamins and minerals</summary><ul>
+      ${nutrientTargets.slice(2).map(([name, target], index) => {
+        const axis = index + 2;
+        const unit = [7, 8, 10, 15, 16, 18].includes(axis) ? 'µg' : 'mg';
+        return `<li>${name} · ${amount(nutrients[axis])} ${unit} · ${Math.round(nutrients[axis] / target * 100)}% daily reference</li>`;
+      }).join('')}</ul></details>
+    <p>Uses the listed ingredient portions and USDA food matches. Brands and preparation change the values.</p>
+  </details>`;
+}
+
+function dinnerNutrients(meal, index = meals.indexOf(meal), selected = additions) {
   const main = mainDinnerNutrients(meal);
   const sides = mealSideNutrients(meal);
-  return main.map((value, axis) => value + sides[axis]);
+  const paired = additionNutrients('d:' + index, selected);
+  return main.map((value, axis) => value + sides[axis] + paired[axis]);
 }
 
 function mainDinnerNutrients(meal) {
@@ -532,13 +709,11 @@ function mainDinnerNutrients(meal) {
 }
 
 function weeklyNutrients(selected) {
-  const dinners = meals.map(dinnerNutrients);
-  const lunches = lunchSelection.map(i => estimateNutrients(lunchPortions[i]));
-  const extras = selected.map(rec => estimateNutrients(coachPortions[rec.id]));
+  const dinners = meals.map((meal, index) => dinnerNutrients(meal, index, selected));
+  const lunches = lunchSelection.map((_, slot) => lunchNutrients(slot, selected));
   return nutrientTargets.map((_, axis) =>
     dinners.reduce((sum, meal) => sum + meal[axis], 0) +
-    lunches.reduce((sum, meal) => sum + meal[axis] / 2, 0) +
-    extras.reduce((sum, meal) => sum + meal[axis], 0)
+    lunches.reduce((sum, meal) => sum + meal[axis] / 2, 0)
   );
 }
 
@@ -581,13 +756,12 @@ function coachSuggestions(coverage, gaps) {
   return recs
     .filter(rec => !dismissedRecs.includes(rec.id) && !additions.some(item => item.id === rec.id))
     .map(rec => {
-      const projected = weeklyCoverage(weeklyNutrients([...additions, rec]));
+      const target = defaultAdditionTarget(rec);
+      const projected = weeklyCoverage(weeklyNutrients([...additions, {...rec, target}]));
       const changes = gaps.map(gap => ({...gap, gain: projected[gap.i] - gap.value}));
       const priorityGain = changes.slice(0, 3).reduce((sum, gap) => sum + gap.gain, 0);
       const scoreGain = coverageScore(projected) - coverageScore(coverage);
-      const highlights = changes.filter(gap => gap.gain >= .05)
-        .sort((a, b) => b.gain - a.gain).slice(0, 2);
-      return {rec, projected, priorityGain, scoreGain, highlights};
+      return {rec, target, projected, priorityGain, scoreGain};
     })
     .filter(item => item.scoreGain > 0)
     .sort((a, b) => b.priorityGain - a.priorityGain || b.scoreGain - a.scoreGain);
@@ -604,8 +778,8 @@ function coachView() {
     <strong>${esc(formatCoverage(value))}%</strong></div>`).join('');
   const unmatched = [...new Set(meals.filter(meal => !meal.imported && !meal.portions).flatMap(meal =>
     meal.ingredients.filter(line => !Object.hasOwn(dinnerPortions, line))))];
-  const perMeal = [...meals.map(meal => [meal.name, dinnerNutrients(meal), meal]),
-    ...lunchSelection.map(i => [allLunches[i][0], estimateNutrients(lunchPortions[i])])]
+  const perMeal = [...meals.map((meal, index) => [meal.name, dinnerNutrients(meal, index), meal]),
+    ...lunchSelection.map((id, slot) => [allLunches[id][0], lunchNutrients(slot)])]
     .map(([name, amounts, meal]) => `<details><summary>${esc(name)}</summary><ul>
       ${nutrientTargets.map(([label, target], i) =>
         `<li>${label} · ${meal?.imported && importedNutrition(meal).values[i] === null && mealSideNutrients(meal)[i] === 0 ?
@@ -624,15 +798,18 @@ function coachView() {
     <details><summary>Estimates by meal</summary>${perMeal}</details></div>
     <div class="section-head"><div><h3>Nutrient Gap Coach</h3><p>Suggestions refresh after you add or dismiss one. The coach prioritizes the three lowest nutrients.</p></div></div>
     ${available.length ? '' : '<p>No more suggestions with an estimated gain for this plan. You can restore dismissed ideas or undo an addition.</p>'}
-    <div class="coach">${available.map(({rec, projected, highlights}) => `<article class="rec">
+    <div class="coach">${available.map(({rec, target, projected}) => `<article class="rec">
     <h4>${rec.name}</h4><p>${rec.portion}</p>
-    <p>Projected score <strong>${esc(formatCoverage(coverageScore(projected)))} / 100</strong></p>
-    ${highlights.length ? `<p>${highlights.map(({name, gain}) => name + ' +' + gain.toFixed(1) + ' pp').join(' · ')}</p>` : ''}
-    <button class="btn" onclick="addRec('${rec.id}')">Add to plan</button>
+    <label>Pair with a meal
+      <select id="rec-target-${rec.id}" onchange="previewRecommendation('${rec.id}',this.value)">${additionTargetOptions(target)}</select>
+    </label>
+    <p>Projected score <strong id="rec-score-${rec.id}">${esc(formatCoverage(coverageScore(projected)))} / 100</strong></p>
+    <button class="btn" onclick="addRec('${rec.id}',document.getElementById('rec-target-${rec.id}').value)">Add to meal</button>
     <button class="btn light" onclick="dismissRec('${rec.id}')">Dismiss</button></article>`).join('')}</div>
     ${dismissedRecs.length ? `<p><button class="link" onclick="restoreDismissedRecs()">Restore dismissed suggestions (${dismissedRecs.length})</button></p>` : ''}
     ${additions.length ? `<div class="section-head"><div><h3>Added to your plan</h3></div></div>
-    <div class="panel">${additions.map(rec => `<div class="shopitem"><span>${rec.add}</span>
+    <div class="panel">${additions.map(rec => `<div class="shopitem"><div><span>${rec.add}</span>
+    <label>Paired meal <select onchange="changeAdditionTarget('${rec.id}',this.value)">${additionTargetOptions(additionTarget(rec))}</select></label></div>
     <button class="link" onclick="removeRec('${rec.id}')">Undo</button></div>`).join('')}</div>` : ''}`;
 }
 
@@ -640,6 +817,8 @@ function recipeView(){return `${importPanel()}${libraryView()}${catalogView()}<d
 
 function render(){document.getElementById('weekLabel').textContent=weekLabel(weekStart);document.getElementById('main').innerHTML=current==='menu'?menuView():current==='coach'?coachView():current==='recipes'?recipeView():current==='history'?historyView():shopView();document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===current))}
 function openRecipe(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><span class="pill">${m.cuisine} · SERVES 7</span><h3 style="font:700 27px Georgia;margin:12px 0">${esc(m.name)}</h3><div class="recipe">${recipePhoto(m)}<div><b>Ingredients</b><ul>${m.ingredients.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>${m.imported ? sourceLink(m) + importedNutritionView(m) + '<p>Review quantities and follow the source cooking directions.</p>' : `<h4>Method</h4><ol>${m.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`}<p style="font-size:12px;color:var(--muted)">${m.imported ? 'Imported recipe · partial nutrient data' : `${m.cost ? `Estimated cost: ${m.cost}. ` : ''}${m.tags.length ? `Nutrient tags: ${m.tags.join(' · ')}.` : ''}`}</p>${mealSides(m).length ? `<h4>Sides for this dinner</h4><ul>${mealSides(m).map(({side,portions}) => `<li>${side.name} · ${portions} × ${side.portion} per person. ${side.method}</li>`).join('')}</ul>` : ''}
+${pairedAdditionsView('d:'+i)}
+${additions.some(rec => additionTarget(rec) === 'd:'+i) ? `<details><summary>Meal nutrition with additions</summary><ul>${nutrientTargets.map(([name,target],axis) => `<li>${name} · ${Math.round(dinnerNutrients(m,i)[axis]/target*100)}% daily reference</li>`).join('')}</ul></details>` : ''}
 <button class="btn light" onclick="openSideSelector(${i})">Add side</button> <button class="btn" onclick="markEaten(${i})">${eaten[i]?'✓ Confirmed eaten':'Mark as eaten'}</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
 function closeModal(){document.getElementById('modal').classList.add('hide')}
 function markEaten(i){eaten[i]=!eaten[i];showToast(eaten[i]?'Marked as eaten':'Eaten status removed');closeModal();render()}
@@ -762,7 +941,7 @@ function draftWeek(week, previousMeals, previousLunches) {
   const priorities = recurringGaps(comparable);
   const selected = [...queued];
   const lunchTotals = lunchSelection.map(i => estimateNutrients(lunchPortions[i]));
-  const importTotals = queued.map(dinnerNutrients);
+  const importTotals = queued.map(recipe => dinnerNutrients(recipe, -1, []));
   const totals = nutrientTargets.map((_, axis) =>
     lunchTotals.reduce((sum, amounts) => sum + amounts[axis] / 2, 0) +
     importTotals.reduce((sum, amounts) => sum + amounts[axis], 0)
@@ -798,7 +977,7 @@ function draftWeek(week, previousMeals, previousLunches) {
 }
 
 function storedPlan() {
-  return {weekStart, meals, lunchSelection, additions: additions.map(rec => rec.id), dismissedRecs, scheduledImports, groceryAssignments, removedGroceries, checked, eaten, lunchDone};
+  return {weekStart, meals, lunchSelection, additions: additions.map(rec => ({id:rec.id, target:additionTarget(rec)})), dismissedRecs, scheduledImports, groceryAssignments, removedGroceries, checked, eaten, lunchDone};
 }
 
 function persistState() {
@@ -822,7 +1001,12 @@ function loadState() {
         saved.lunchSelection.every(i => Number.isInteger(i) && allLunches[i])) {
       lunchSelection = saved.lunchSelection;
     }
-    additions = (saved.additions || []).map(id => recs.find(rec => rec.id === id)).filter(Boolean);
+    additions = (saved.additions || []).flatMap(entry => {
+      const rec = recs.find(item => item.id === (typeof entry === 'string' ? entry : entry?.id));
+      if (!rec) return [];
+      const target = validAdditionTarget(entry?.target) ? entry.target : defaultAdditionTarget(rec);
+      return [{...rec, target}];
+    });
     dismissedRecs = Array.isArray(saved.dismissedRecs)
       ? [...new Set(saved.dismissedRecs)].filter(id => recs.some(rec => rec.id === id)) : [];
     scheduledImports = Array.isArray(saved.scheduledImports) ? saved.scheduledImports : [];
@@ -882,7 +1066,7 @@ function startWeeklyPlan() {
 
 function saveWeek(){persistState();showToast('Family Fuel changes saved on this device.')}
 function resetWeek(){if(!confirm('Clear this saved plan and its checkmarks from this device?'))return;localStorage.removeItem(STORAGE_KEY);location.reload()}
-function menuView(){return `${weeklyDraftView()}<div class="section-head"><div><h3>Dinner, handled.</h3><p>Five flavor-forward dinners · serves 7 · tap a recipe or edit a meal</p></div></div><div class="grid">${meals.map((m,i)=>`<article class="meal">${recipePhoto(m)}<div class="meal-body"><div class="meal-top"><span class="pill">${m.day} · ${m.date}</span><span style="font-size:11px;color:var(--muted)">${m.time}</span></div><h4>${esc(m.name)}</h4><p>${esc(m.desc)}</p><div class="meal-foot"><span>${m.cuisine}</span><span>${eaten[i]?'✓ Eaten':'Planned'}</span></div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" onclick="openRecipe(${i})">View recipe</button><button class="btn light" onclick="openEditor(${i})">Edit</button><button class="btn outline" onclick="swapMeal(${i})">Swap</button><button class="btn light" onclick="openSideSelector(${i})">Add side</button></div>${mealSideList(m,i)}</div></article>`).join('')}</div><div class="section-head"><div><h3>Fast lunches</h3><p>Four low-effort ideas · serves 3–4 · tick when made</p></div></div><div class="panel">${lunchSelection.map((id,i)=>{const l=allLunches[id];return `<div class="lunch">${l[3]?`<img src="${l[3]}" alt="" loading="lazy">`: ''}<div style="flex:1"><h4>${l[0]}</h4><p>${l[1]}</p><small style="color:var(--green)">${l[2]} · quick assembly</small></div><label style="font-size:12px;white-space:nowrap"><input type="checkbox" ${lunchDone[i]?'checked':''} onchange="toggleLunch(${i},this.checked)"> Made</label></div>`}).join('')}</div><div class="note">The Nutrient Coach estimates coverage from the meals and additions in this plan.</div>`}
+function menuView(){return `${weeklyDraftView()}<div class="section-head"><div><h3>Dinner, handled.</h3><p>Five flavor-forward dinners · serves 7 · tap a recipe or edit a meal</p></div></div><div class="grid">${meals.map((m,i)=>`<article class="meal">${recipePhoto(m)}<div class="meal-body"><div class="meal-top"><span class="pill">${m.day} · ${m.date}</span><span style="font-size:11px;color:var(--muted)">${m.time}</span></div><h4>${esc(m.name)}</h4><p>${esc(m.desc)}</p><div class="meal-foot"><span>${m.cuisine}</span><span>${eaten[i]?'✓ Eaten':'Planned'}</span></div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" onclick="openRecipe(${i})">View recipe</button><button class="btn light" onclick="openEditor(${i})">Edit</button><button class="btn outline" onclick="swapMeal(${i})">Swap</button><button class="btn light" onclick="openSideSelector(${i})">Add side</button></div>${mealSideList(m,i)}${pairedAdditionsView('d:'+i)}</div></article>`).join('')}</div><div class="section-head"><div><h3>Fast lunches</h3><p>Four low-effort ideas · serves 3–4 · tick when made</p></div></div><div class="panel">${lunchSelection.map((id,i)=>{const l=allLunches[id];return `<div class="lunch">${l[3]?`<img src="${l[3]}" alt="" loading="lazy">`: ''}<div style="flex:1"><h4>${l[0]}</h4><p>${l[1]}</p><small style="color:var(--green)">${l[2]} · quick assembly</small>${pairedAdditionsView('l:'+i)}${lunchNutritionFacts(i)}</div><label style="font-size:12px;white-space:nowrap"><input type="checkbox" ${lunchDone[i]?'checked':''} onchange="toggleLunch(${i},this.checked)"> Made</label></div>`}).join('')}</div><div class="note">The Nutrient Coach estimates coverage from the meals and additions in this plan.</div>`}
 function openEditor(i){let m=meals[i];document.getElementById('modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">×</button><h3 style="font:700 25px Georgia">Edit ${m.day} dinner</h3><label>Meal name<input id="editName" value="${esc(m.name)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Description<textarea id="editDesc" style="width:100%;min-height:76px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.desc)}</textarea></label><label>Cuisine<input id="editCuisine" value="${esc(m.cuisine)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Prep/cook time<input id="editTime" value="${esc(m.time)}" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px"></label><label>Ingredients (one per line)<textarea id="editIngredients" style="width:100%;min-height:120px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.ingredients.join('\n'))}</textarea></label><label>Cooking steps (one per line)<textarea id="editSteps" style="width:100%;min-height:140px;padding:11px;border:1px solid var(--line);border-radius:10px;margin:5px 0 12px">${esc(m.steps.join('\n'))}</textarea></label><button class="btn" onclick="saveMealEdit(${i})">Save meal</button></div></div>`;document.getElementById('modal').classList.remove('hide')}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function saveMealEdit(i){let m=meals[i];m.name=document.getElementById('editName').value.trim()||m.name;m.desc=document.getElementById('editDesc').value.trim();m.cuisine=document.getElementById('editCuisine').value.trim();m.time=document.getElementById('editTime').value.trim();const changedIngredients=document.getElementById('editIngredients').value.split('\n').map(x=>x.trim()).filter(Boolean);if(JSON.stringify(changedIngredients)!==JSON.stringify(m.ingredients)){if(m.imported)m.nutrition={};delete m.portions;}m.ingredients=changedIngredients;m.steps=document.getElementById('editSteps').value.split('\n').map(x=>x.trim()).filter(Boolean);closeModal();persistState();render();showToast('Meal updated.')}
@@ -967,7 +1151,7 @@ function shoppingItems() {
       sideQuantity: {id: side.id, portions, portion: side.portion},
     }))),
     ...lunchSelection.map(i => ({id: 'meal-5', name: allLunches[i][0], items: lunchGroceries[i]})),
-    ...additions.map(rec => ({id: 'coach-' + rec.id, name: rec.add, items: rec.shop})),
+    ...additions.map(rec => ({id: 'coach-' + rec.id, name: additionLabel(additionTarget(rec)) + ' · ' + rec.add, items: additionShoppingLines(rec)})),
   ];
   const combined = new Map();
   for (const group of groups) {
@@ -1133,17 +1317,18 @@ function exportShopping(storeKey) {
   showToast('Shopping list exported.');
 }
 
-function addRec(id) {
+function addRec(id, target) {
   const rec = recs.find(item => item.id === id);
   if (!rec || additions.some(item => item.id === id) || dismissedRecs.includes(id)) return;
-  additions.push(rec);
+  additions.push({...rec, target: validAdditionTarget(target) ? target : defaultAdditionTarget(rec)});
   persistState();
   render();
-  showToast('Added to your plan and shopping list.');
+  showToast('Added to the paired meal and shopping list.');
 }
 
 function removeRec(id) {
   additions = additions.filter(item => item.id !== id);
+  closeModal();
   persistState();
   render();
 }
