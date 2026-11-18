@@ -1527,6 +1527,12 @@ function displayRecipeTime(value) {
   return match ? [match[1] && match[1] + ' hr', match[2] && match[2] + ' min'].filter(Boolean).join(' ') : '';
 }
 
+const recipeCategories = {dinner: 'Dinner', lunch: 'Lunch', side: 'Side'};
+
+function recipeCategory(recipe) {
+  return Object.hasOwn(recipeCategories, recipe.category) ? recipe.category : 'dinner';
+}
+
 function showRecipeReview(draft = {}) {
   pendingRecipe = draft;
   const source = safeRecipeUrl(draft.url);
@@ -1534,6 +1540,10 @@ function showRecipeReview(draft = {}) {
     <h4>Review recipe</h4>
     ${recipePhoto({img: draft.image}, 'recipe-source-photo')}
     <label>Name <input name="name" value="${esc(draft.name || '')}" maxlength="150" required></label>
+    <label>Category <select name="category" required>
+      <option value="" selected disabled>Choose a category</option>
+      ${Object.entries(recipeCategories).map(([value, label]) => `<option value="${value}">${label}</option>`).join('')}
+    </select></label>
     <label>Original servings <input name="servings" type="number" min="1" max="100" step="1" value="${estimateServings(draft.servings)}" required></label>
     ${draft.servings && !estimateServings(draft.servings) ? `<p>The publisher lists <strong>${esc(draft.servings)}</strong>. Enter the serving count you want to use for scaling.</p>` : ''}
     <p><label>Original recipe link <input name="source" type="url" maxlength="2048" value="${esc(source)}"></label></p>
@@ -1598,6 +1608,11 @@ function saveImportedRecipe(event) {
   const form = event.currentTarget;
   const fields = Object.fromEntries(new FormData(form));
   const name = fields.name.trim();
+  const category = fields.category;
+  if (!Object.hasOwn(recipeCategories, category)) {
+    showToast('Choose Dinner, Lunch, or Side.');
+    return;
+  }
   const servings = Number(fields.servings);
   const source = safeRecipeUrl(fields.source);
   const raw = fields.ingredients.split('\n').map(line => line.trim()).filter(Boolean);
@@ -1612,7 +1627,7 @@ function saveImportedRecipe(event) {
   const nutrition = originalUnchanged ? pendingRecipe.nutrition || {} : {};
   const previous = source && recipeLibrary.find(item => item.source === source);
   const recipe = {
-    id: previous?.id || crypto.randomUUID(), queueKey: crypto.randomUUID(), name, source, imported: true, cuisine: 'IMPORTED',
+    id: previous?.id || crypto.randomUUID(), queueKey: crypto.randomUUID(), name, category, source, imported: true, cuisine: 'IMPORTED',
     time: displayRecipeTime(pendingRecipe?.time) || 'See recipe',
     img: source && source === safeRecipeUrl(pendingRecipe?.url)
       ? safeRecipeImage(pendingRecipe?.image) || previous?.img || ''
@@ -1629,13 +1644,13 @@ function saveImportedRecipe(event) {
   pendingRecipe = null;
   weeklyDraft = null;
   if (!refreshWeeklyDraft()) render();
-  showToast('Recipe saved and queued for an upcoming plan.');
+  showToast(category === 'dinner' ? 'Dinner saved and queued for an upcoming plan.' : recipeCategories[category] + ' saved to your recipe library.');
 
 }
 
 function queuedImports() {
   return [...recipeLibrary].reverse().filter(recipe =>
-    recipe.queueKey && !scheduledImports.includes(recipe.queueKey));
+    recipeCategory(recipe) === 'dinner' && recipe.queueKey && !scheduledImports.includes(recipe.queueKey));
 }
 
 function catalogView() {
@@ -1653,9 +1668,9 @@ function catalogView() {
 
 function libraryView() {
   const queued = new Map(queuedImports().map((recipe, i) => [recipe.queueKey, i]));
-  return `<div class="section-head"><div><h3>Saved recipes</h3><p>New imports are queued for the next weekly draft. Extra imports roll into later weeks when all five dinner slots are filled.</p></div></div>
+  return `<div class="section-head"><div><h3>Saved recipes</h3><p>Imported dinners are queued for the next weekly draft. Lunches and sides stay in this library.</p></div></div>
   ${recipeLibrary.length ? `<div class="panel">${recipeLibrary.map(recipe => `<div class="lunch">
-    ${recipePhoto(recipe)}<div style="flex:1"><h4>${esc(recipe.name)}</h4><p>${esc(recipe.time)} · serves 7${queued.has(recipe.queueKey) ? queued.get(recipe.queueKey) < 5 ? ' · queued for next week' : ' · queued for a later week' : ''}</p></div>
+    ${recipePhoto(recipe)}<div style="flex:1"><h4>${esc(recipe.name)}</h4><p>${recipeCategories[recipeCategory(recipe)]} · ${esc(recipe.time)} · serves 7${queued.has(recipe.queueKey) ? queued.get(recipe.queueKey) < 5 ? ' · queued for next week' : ' · queued for a later week' : ''}</p></div>
     <button class="btn light" onclick="openSavedRecipe('${recipe.id}')">Open</button></div>`).join('')}</div>` :
     '<p>Imported recipes will appear here.</p>'}`;
 }
@@ -1675,16 +1690,17 @@ function openSavedRecipe(id) {
     <h3>${esc(recipe.name)}</h3>
     ${recipePhoto(recipe, 'recipe-source-photo')}
     ${recipe.source ? `<p><button class="btn light" onclick="refreshRecipePhoto('${id}',this)">${recipe.img ? 'Refresh recipe photo' : 'Get recipe photo'}</button></p>` : ''}
-    <p>Ingredients scaled to seven.</p>
+    <p>${recipeCategories[recipeCategory(recipe)]} · Ingredients scaled to seven.</p>
     <ul>${recipe.ingredients.map(line => `<li>${esc(line)}${recipe.reviewIngredients.includes(line) ? ' <small>· check quantity</small>' : ''}</li>`).join('')}</ul>
     ${sourceLink(recipe)}${importedNutritionView(recipe)}
+    ${recipeCategory(recipe) === 'dinner' ? `
     ${meals.some(meal => meal.id === id) ? '<p>This recipe is already in this week’s plan.</p>' : ''}
     ${suggestedSlot < 0 ? '<p>Choose a dinner below to replace.</p>' : '<p>The next dinner slot is selected below.</p>'}
     <form onsubmit="useSavedRecipe(event,'${id}')"><label>Dinner slot
       <select name="day" required>
         <option value="" ${suggestedSlot < 0 ? 'selected' : ''} disabled>Choose a dinner</option>
         ${meals.map((meal, i) => `<option value="${i}" ${i === suggestedSlot ? 'selected' : ''}>${meal.day} · ${esc(meal.name)}${meal.imported ? ' (saved recipe)' : ''}${eaten[i] ? ' (eaten)' : ''}</option>`).join('')}</select>
-    </label> <button class="btn" type="submit">Add to this week</button></form></div></div>`;
+    </label> <button class="btn" type="submit">Add to this week</button></form>` : ''}</div></div>`;
   modal.classList.remove('hide');
 }
 
