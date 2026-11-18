@@ -14,6 +14,7 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 SITE_ORIGIN = "https://family-fuel.onrender.com"
 MAX_PAGE = 3 * 1024 * 1024
 REDIRECTS = {301, 302, 303, 307, 308}
+INSTAGRAM_HOSTS = {"instagram.com", "www.instagram.com"}
 PIN_HOSTS = {"pinterest.com", "www.pinterest.com"}
 FETCH_SLOTS = threading.BoundedSemaphore(4)
 
@@ -38,6 +39,11 @@ def public_url(value):
         pin = re.match(r"^/pin/(\d+)(?:/|$)", path)
         if pin:
             path, query = f"/pin/{pin.group(1)}/", ""
+    if host in INSTAGRAM_HOSTS:
+        post = re.fullmatch(r"/(?:(?:[\w.]+)/)?(reel|p|tv)/([\w-]+)/?", path)
+        if not post:
+            raise ImportErrorForUser("Use a public Instagram Reel or post link.")
+        return f"https://www.instagram.com/{post[1]}/{post[2]}/"
     return urlunsplit(("https", host, path, query, ""))
 
 
@@ -99,6 +105,7 @@ class RecipeMarkup(HTMLParser):
         self.script = None
         self.source = None
         self.images = []
+        self.caption = ""
 
     def handle_starttag(self, tag, attributes):
         attrs = dict(attributes)
@@ -106,6 +113,8 @@ class RecipeMarkup(HTMLParser):
             self.script = []
         if tag == "meta" and attrs.get("property") in {"pinterestapp:source", "og:see_also"}:
             self.source = self.source or attrs.get("content")
+        if tag == "meta" and attrs.get("property") == "og:description":
+            self.caption = attrs.get("content") or ""
         image_properties = {"og:image", "og:image:url", "og:image:secure_url"}
         if tag == "meta" and attrs.get("property") in image_properties and attrs.get("content"):
             self.images.append(attrs["content"])
@@ -258,14 +267,72 @@ def recipe_time(recipe):
     return f"PT{minutes}M" if minutes else ""
 
 
-def recipe_draft(url):
+def instagram_draft(url, caption, images=()):
+    lines = [line.strip() for line in caption.splitlines() if line.strip()]
+    heading = next((i for i, line in enumerate(lines)
+                    if re.match(r"^(?:[\W_]+)?ingredients\b", line, re.I)), None)
+    if heading is None:
+        raise ImportErrorForUser("No written ingredient list was found. Paste the recipe caption or enter the recipe by hand.")
+
+    ingredients = []
+    for raw in lines[heading + 1:]:
+        if re.match(r"^(?:[\W_]+)?(?:instructions|directions|method|steps|how to|nutrition|macros)\b|^[^\w-]*#", raw, re.I):
+            break
+        bullet = re.match(r"^[-–•*]\s+(.+)", raw)
+        if bullet or re.match(r"^\d|^[¼½¾⅓⅔⅛]", raw):
+            line = text(bullet[1] if bullet else raw, 300)
+            if line:
+                ingredients.append(line)
+        elif ingredients:
+            break
+        if len(ingredients) == 80:
+            break
+    if len(ingredients) < 2:
+        raise ImportErrorForUser("No written ingredient list was found. Paste the full caption or enter the recipe by hand.")
+
+    yield_match = re.search(r"\b(?:makes?|serves?|yield\s*:?)\s+(\d{1,2})(?![\d.–-])", caption, re.I)
+    yield_line = next((i for i, line in enumerate(lines[:heading])
+                       if re.match(r"^(?:makes?|serves?|yield)\b", line, re.I)), None)
+    title = lines[yield_line - 1] if yield_line else "Instagram recipe"
+    title = re.sub(r"^EP\.?\s*\d+\s*[:.\-]?\s*", "", title, flags=re.I)
+    title = re.sub(r"[^\w)]+$", "", title).strip()
+    # Captions may have an engagement prefix before a title.
+    if not title or len(title) > 150 or re.search(r"\blikes,|\bcomments -", title):
+        title = "Instagram recipe"
+    nutrition = {}
+    macros = re.search(r"\bper serving\s*:[^\n]*(?:\n[^\n]*)?", caption, re.I)
+    if macros:
+        protein = re.search(r"\b(\d+(?:\.\d+)?)\s*g\s*(?:protein|P)\b", macros[0], re.I)
+        if protein:
+            nutrition["proteinContent"] = float(protein[1])
+    return {"name": title, "ingredients": ingredients, "url": url, "nutrition": nutrition,
+            "servings": yield_match[1] if yield_match else "", "time": "",
+            "image": recipe_image(url, None, images)}
+
+
+def recipe_draft(url, caption=None):
+    url = public_url(url)
+    instagram = urlsplit(url).hostname in INSTAGRAM_HOSTS
+    if caption is not None:
+        if not instagram or not isinstance(caption, str) or not 0 < len(caption) <= 5000:
+            raise ImportErrorForUser("Paste a caption of up to 5,000 characters and its Instagram post link.")
+        return instagram_draft(url, caption)
+
+
     for _ in range(2):
-        url, html = fetch_page(url)
+        try:
+            url, html = fetch_page(url)
+        except (ImportErrorForUser, OSError, http.client.HTTPException):
+            if instagram:
+                raise ImportErrorForUser("Instagram did not make the caption available. Paste the caption below the link.")
+            raise
         page = RecipeMarkup()
         page.feed(html)
         if urlsplit(url).hostname in PIN_HOSTS and page.source:
             url = page.source
             continue
+        if instagram:
+            return instagram_draft(url, page.caption, page.images)
         for recipe in structured_recipes(page, html):
             entries = recipe.get("recipeIngredient")
             if not isinstance(entries, list):
@@ -327,12 +394,12 @@ class Handler(BaseHTTPRequestHandler):
         try:
             self.connection.settimeout(5)
             size = int(self.headers.get("Content-Length", "0"))
-            if not 0 < size <= 4096:
+            if not 0 < size <= 32768:
                 raise ImportErrorForUser("Enter one public recipe URL.")
             payload = json.loads(self.rfile.read(size))
             if not isinstance(payload, dict):
                 raise ImportErrorForUser("Enter one public recipe URL.")
-            self.reply(200, recipe_draft(payload.get("url")))
+            self.reply(200, recipe_draft(payload.get("url"), payload.get("caption")))
         except ImportErrorForUser as error:
             self.reply(422, {"error": str(error)})
         except (ValueError, UnicodeError):
